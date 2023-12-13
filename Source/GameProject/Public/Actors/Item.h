@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Interfaces/Item_I.h"
 #include "Structures/ItemData.h"
 #include "Item.generated.h"
 
@@ -12,7 +13,7 @@ class UStaticMeshComponent;
 class USphereComponent;
 
 UCLASS(Abstract)
-class GAMEPROJECT_API AItem : public AActor
+class GAMEPROJECT_API AItem : public AActor, public IItem_I
 {
 	GENERATED_BODY()
 
@@ -41,6 +42,9 @@ public:
 private:
 	// Initializes all components, setups attachments
 	void InitComponents();
+
+	//Initializes tags for that actor
+	void InitTags();
 	
 	///////////////////////////////////////////Collision//////////////////////////////////////////////////////////
 private:
@@ -53,11 +57,17 @@ public:
 	///////////////////////////////////////////Widget//////////////////////////////////////////////////////////
 public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Widget")
-	UWidgetComponent* Widget;
+	UWidgetComponent* WidgetComponent;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Widget")
 	TSoftClassPtr<UUserWidget> WidgetClass;
 
+	//Ref to spawned UserWidget
+	UPROPERTY()
+	UUserWidget* UserWidget;
+private:
 	UFUNCTION(BlueprintCallable, Category="Widget")
-	void SetWidgetVisibility (const bool bNewVisibility);
+	bool SetWidgetVisibility (const bool bNewVisibility);
+public:
+	virtual void SetWidgetVisibility_I_Implementation(const bool bNewVisibility) override;
 };

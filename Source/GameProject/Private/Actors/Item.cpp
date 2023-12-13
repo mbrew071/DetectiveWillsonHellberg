@@ -2,6 +2,8 @@
 
 
 #include "Actors/Item.h"
+
+#include "GameplayTagContainer.h"
 #include "Components/WidgetComponent.h"
 #include "Components/SphereComponent.h"
 
@@ -11,14 +13,15 @@ AItem::AItem()
 
 	InitComponents();
 	InitCollision();
+	InitTags();
 }
 
 void AItem::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//Start with disabled visibility
-//	SetWidgetVisibility(false);
+	//Start with disabled widget
+	SetWidgetVisibility(false);
 }
 
 void AItem::Tick(float DeltaTime)
@@ -35,15 +38,20 @@ void AItem::InitComponents()
 	RootComponent->PrimaryComponentTick.bCanEverTick = false;
 	RootComponent->PrimaryComponentTick.bStartWithTickEnabled = false;
 	
-	Widget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
-	Widget->SetupAttachment(SceneComponent);
-	Widget->PrimaryComponentTick.bCanEverTick = false;
-	Widget->PrimaryComponentTick.bStartWithTickEnabled = false;
+	WidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
+	WidgetComponent->SetupAttachment(SceneComponent);
+	WidgetComponent->PrimaryComponentTick.bCanEverTick = false;
+	WidgetComponent->PrimaryComponentTick.bStartWithTickEnabled = false;
 	
 	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
 	SphereComponent->SetupAttachment(SceneComponent);
 	SphereComponent->PrimaryComponentTick.bCanEverTick = false;
 	SphereComponent->PrimaryComponentTick.bStartWithTickEnabled = false;
+}
+
+void AItem::InitTags()
+{
+	Tags.Add(FGameplayTag::RequestGameplayTag(FName("Actor.Interactable.Item")).GetTagName());
 }
 
 void AItem::InitCollision()
@@ -52,11 +60,55 @@ void AItem::InitCollision()
 	SphereComponent->CanCharacterStepUpOn = ECB_No;
 }
 
-void AItem::SetWidgetVisibility(const bool bNewVisibility)
+bool AItem::SetWidgetVisibility(const bool bNewVisibility)
 {
-	//TODO  Fix me 
-	Widget->SetVisibility(bNewVisibility);
-	Widget->SetHiddenInGame(!bNewVisibility);
+	if (!WidgetComponent) { return false; }
+	if (!bNewVisibility)
+	{
+		//remove current widget 
+		if (UserWidget) {UserWidget->RemoveFromParent();}
+		if (UserWidget) {UserWidget->Destruct();}
+
+		//outro
+		WidgetComponent->SetWidget(nullptr);
+		WidgetComponent->SetVisibility(bNewVisibility);
+		WidgetComponent->SetHiddenInGame(!bNewVisibility);
+		return true;
+	}
+
+	//Try load widget class
+	UClass* WidgetClassLoaded = WidgetClass.LoadSynchronous();
+	if (!WidgetClassLoaded) { return false; }
+	
+	if(bNewVisibility)
+	{
+		//remove Current
+		if (UserWidget) {UserWidget->RemoveFromParent();}
+		if (UserWidget) {UserWidget->Destruct();}
+
+		//Spawn new
+		UserWidget = CreateWidget<UUserWidget>(GetWorld(), WidgetClassLoaded);
+		
+		if (!UserWidget) { return false; }
+
+		//Spawned Succeeded therefore we initialize:
+		UserWidget->AddToViewport();
+		WidgetComponent->SetWidget(UserWidget);
+		WidgetComponent->SetVisibility(bNewVisibility);
+		WidgetComponent->SetHiddenInGame(!bNewVisibility);
+		return true;
+	}
+	//Spawn failed therefore we cleanup
+	WidgetComponent->SetWidget(nullptr);
+	WidgetComponent->SetVisibility(bNewVisibility);
+	WidgetComponent->SetHiddenInGame(!bNewVisibility);
+	return false;
+}
+
+void AItem::SetWidgetVisibility_I_Implementation(const bool bNewVisibility)
+{
+	//IItem_I::SetWidgetVisibility_I_Implementation(bNewVisibility);
+	SetWidgetVisibility(bNewVisibility);
 }
 
 
