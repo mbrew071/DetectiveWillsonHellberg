@@ -3,8 +3,11 @@
 
 #include "Objects/InteractActions.h"
 
-void UInteractActions::PreformInteraction(const AActor* OwningActor, const AActor* InteractionTarget, const FName Tag,
-                                          bool& bSuccess)
+#include "GameplayTagContainer.h"
+
+
+void UInteractActions::PerformInteraction_Implementation(const AActor* OwningActor, const AActor* InteractionTarget,
+                                                         const FGameplayTag InteractionType)
 {
 	// Implement this by children
 }

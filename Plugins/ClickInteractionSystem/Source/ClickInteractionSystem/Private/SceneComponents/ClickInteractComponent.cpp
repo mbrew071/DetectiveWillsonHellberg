@@ -66,7 +66,7 @@ void UClickInteractComponent::InitSphereComponentCollision()
 	
 	SphereComponentRange->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
 	SphereComponentRange->SetCollisionResponseToAllChannels(ECR_Ignore);
-	SphereComponentRange->SetCollisionResponseToChannel(CharacterChannel, ECR_Overlap);
+	SphereComponentRange->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 }
 
 void UClickInteractComponent::InitSphereComponentClick()
@@ -109,10 +109,8 @@ bool UClickInteractComponent::TryInteractWith(const AActor* InteractingCharacter
 
 	if (InteractionType.IsValid()){ return false; }
 	
-	bool bSuccess;
-	Actions->PreformInteraction(InteractingCharacter, GetOwner(), InteractionType.GetTagName(), bSuccess);
-
-	if (!bSuccess) {return false;}
+	Actions->PerformInteraction(InteractingCharacter, GetOwner(), InteractionType);
+	
 	return true;
 }
 

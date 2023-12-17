@@ -63,11 +63,7 @@ public:
 	//When false Character can interact while being far from this component 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|InteractCollision")
 	bool bCheckDistance = true;
-
-	//Only Characters with this collision can interact with this component
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|InteractCollision")
-	TEnumAsByte<ECollisionChannel> CharacterChannel = ECC_Pawn;
-
+	
 	//Actors that are in range to interact with the owner of this component
 	UPROPERTY(BlueprintReadWrite, Category="Design|InteractCollision")
 	TArray<AActor*> ActorsInRange;
@@ -145,3 +141,13 @@ public:
 	virtual void TryInteractWith_I_Implementation(const AActor* InteractingCharacter) override;
 	
 };
+
+/*	Setup:
+ *	0. Player controller -> Set "EnableClickEvents" to true (without this I wont be able to click on collision)
+ *	1. Add this component to an actor
+ *	2. Set Tags
+ *	3. Set ClickCollision Collision ObjectType (to eg. "Interactable", Create new collision channel if needed)
+ *	4. Set RangeCollision Collision to overlap Character (eg. ignore everything, overlap Pawn)
+ *	5. Set WidgetClass (if I want a widget to spawn when character is in range)
+ *	6. Set Interaction class. (Each project should have a custom interaction class)
+ */

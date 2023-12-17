@@ -16,10 +16,9 @@ class CLICKINTERACTIONSYSTEM_API UInteractActions : public UObject
 
 public:	
 	//Override this function.
-	UFUNCTION(Blueprintable)
-	virtual void PreformInteraction(const AActor* OwningActor, const AActor* InteractionTarget, const FName Tag,
-	                                bool& bSuccess);
-
+	UFUNCTION(BlueprintNativeEvent)
+	void PerformInteraction(const AActor* OwningActor, const AActor* InteractionTarget, const FGameplayTag InteractionType);
+	
 	//TODO On Interaction finished
 	//TODO Create interface for calling PerformInteraction
 };
