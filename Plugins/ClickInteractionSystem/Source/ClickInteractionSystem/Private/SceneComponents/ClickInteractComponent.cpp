@@ -4,7 +4,8 @@
 #include "SceneComponents/ClickInteractComponent.h"
 
 #include "GameplayTagContainer.h"
-#include "Components/SphereComponent.h"
+#include "Components/BoxComponent.h"
+
 #include "Components/WidgetComponent.h"
 #include "Objects/InteractActions.h"
 #include "Objects/InteractActionsManager.h"
@@ -16,8 +17,8 @@ UClickInteractComponent::UClickInteractComponent()
 	//WidgetClass = TSoftClassPtr<UUserWidget>(FString::Printf(TEXT("%s/Plugins/ClickInteractionSystem/Content/WBP_InteractPin.uasset"), *FPaths::ProjectContentDir()));
 
 	InitClickInteractComponent();
-	InitSphereComponentCollision();
-	InitSphereComponentClick();
+	InitComponentRange();
+	InitClickArea();
 	InitWidgetComponent();
 }
 
@@ -27,8 +28,11 @@ void UClickInteractComponent::BeginPlay()
 	InitTags();
 
 	//TODO try do these on construction
-	SphereComponentRange->OnComponentBeginOverlap.AddDynamic(this, &UClickInteractComponent::OnSphereCollisionBeginOverlap);
-	SphereComponentRange->OnComponentEndOverlap.AddDynamic(this, &UClickInteractComponent::OnSphereCollisionEndOverlap);
+	if (ComponentRange)
+	{
+		ComponentRange->OnComponentBeginOverlap.AddDynamic(this, &UClickInteractComponent::OnComponentRangeBeginOverlap);
+		ComponentRange->OnComponentEndOverlap.AddDynamic(this, &UClickInteractComponent::OnComponentRangeEndOverlap);
+	}
 }
 
 void UClickInteractComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -52,50 +56,46 @@ void UClickInteractComponent::InitTags()
 
 //////////////////////////////////////////////// Collision /////////////////////////////////////////////////////////////
 
-void UClickInteractComponent::InitSphereComponentCollision()
+void UClickInteractComponent::InitComponentRange()
 {
 	//Basic
-	SphereComponentRange = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponentCollision"));
-	SphereComponentRange->SetupAttachment(this);
-
-	SphereComponentRange->SetSphereRadius(RadiusSphereComponentRange, false);
+	ComponentRange = CreateDefaultSubobject<UBoxComponent>(TEXT("ComponentRange"));
+	ComponentRange->SetupAttachment(this);
 	
-	SphereComponentRange->PrimaryComponentTick.bCanEverTick = false;
-	SphereComponentRange->PrimaryComponentTick.bStartWithTickEnabled = false;
-
+	ComponentRange->SetBoxExtent(FVector(64.0,64.0,64.0));
+	ComponentRange->PrimaryComponentTick.bCanEverTick = false;
+	ComponentRange->PrimaryComponentTick.bStartWithTickEnabled = false;
 	
-	SphereComponentRange->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
-	SphereComponentRange->SetCollisionResponseToAllChannels(ECR_Ignore);
-	SphereComponentRange->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	ComponentRange->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
+	ComponentRange->SetCollisionResponseToAllChannels(ECR_Ignore);
+	ComponentRange->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 }
 
-void UClickInteractComponent::InitSphereComponentClick()
+void UClickInteractComponent::InitClickArea()
 {
 	//Basic
-	SphereComponentClick = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponentClick"));
-	SphereComponentClick->SetupAttachment(this);
-
-	SphereComponentClick->SetSphereRadius(RadiusSphereComponentClick, false);
+	ClickArea = CreateDefaultSubobject<UBoxComponent>(TEXT("ClickArea"));
+	ClickArea->SetupAttachment(this);
 	
-	SphereComponentClick->PrimaryComponentTick.bCanEverTick = false;
-	SphereComponentClick->PrimaryComponentTick.bStartWithTickEnabled = false;
+	ClickArea->PrimaryComponentTick.bCanEverTick = false;
+	ClickArea->PrimaryComponentTick.bStartWithTickEnabled = false;
 	
-	SphereComponentClick->ShapeColor = FColor::Green;
+	ClickArea->ShapeColor = FColor::Green;
 
-	SphereComponentClick->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
-	SphereComponentClick->SetCollisionResponseToAllChannels(ECR_Ignore);
-	SphereComponentClick->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	ClickArea->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
+	ClickArea->SetCollisionResponseToAllChannels(ECR_Ignore);
+	ClickArea->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 }
 
-void UClickInteractComponent::OnSphereCollisionBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+void UClickInteractComponent::OnComponentRangeBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	ActorsInRange.Add(OtherActor);
 	SetWidgetVisibility(true);
 }
 
-void UClickInteractComponent::OnSphereCollisionEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-                                                          UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+void UClickInteractComponent::OnComponentRangeEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+									 UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	ActorsInRange.Remove(OtherActor);
 	SetWidgetVisibility(false);

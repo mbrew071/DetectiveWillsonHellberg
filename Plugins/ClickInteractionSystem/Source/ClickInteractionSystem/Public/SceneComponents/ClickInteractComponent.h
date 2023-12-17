@@ -16,6 +16,7 @@
 class UInteractActions;
 class USphereComponent;
 class UWidgetComponent;
+class UBoxComponent;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent, Blueprintable))
 class CLICKINTERACTIONSYSTEM_API UClickInteractComponent : public USceneComponent, public IClickInteractComponent_I
@@ -72,35 +73,27 @@ public:
 	//This Sphere checks if the character is near enough to interact with owner of this component
 	//Only Characters overlapped by this collision can interact by clicking on click collision
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|InteractCollision")
-	USphereComponent* SphereComponentRange;
-
-	//Initial Radius of the interaction distance area
-	UPROPERTY(BlueprintReadWrite, Category="Design|InteractCollision")
-	float RadiusSphereComponentRange = 100.0f;
+	UBoxComponent* ComponentRange;
 
 private:
-	void InitSphereComponentCollision();
+	void InitComponentRange();
 
 public:
 	//Collision which will catch clicks
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|InteractCollision")
-	USphereComponent* SphereComponentClick;
-
-	//Initial Radius of the clickable area
-	UPROPERTY(BlueprintReadWrite, Category="Design|InteractCollision")
-	float RadiusSphereComponentClick = 20.0f;
+	UBoxComponent* ClickArea;
 
 private:
-	void InitSphereComponentClick();
+	void InitClickArea();
 
 	//Adds actor that is close enough to interact
 	UFUNCTION()
-	void OnSphereCollisionBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	void OnComponentRangeBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	                                   UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
 	                                   const FHitResult& SweepResult);
 	// Removes actor as in is no longer in close enough to interact 
 	UFUNCTION()
-	void OnSphereCollisionEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	void OnComponentRangeEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	                                 UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 
