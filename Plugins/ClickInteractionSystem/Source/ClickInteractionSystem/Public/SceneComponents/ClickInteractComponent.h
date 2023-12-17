@@ -36,6 +36,7 @@ public:
 private:
 	
 	void InitClickInteractComponent();
+	
 	//////////////////////////////////////////// Tags /////////////////////////////////////////////////////////////////
 
 public:
@@ -48,11 +49,6 @@ public:
 	//eg. "SceneComponent.ClickInteract.RangeArea"
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|Tags")
 	FGameplayTag RangeAreaTag = FGameplayTag::RequestGameplayTag(FName("SceneComponent.ClickInteract.RangeArea"));
-
-	//Tags for collision components that will be used as Range area
-	//eg. "SceneComponent.ClickInteract.ClickArea"
-//  UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|Tags")
-//	FGameplayTag ClickAreaTag = FGameplayTag::RequestGameplayTag(FName("SceneComponent.ClickInteract.ClickArea"));
 	
 	//Tag for the type of interaction that this component has
 	//eg. "InteractionType.Pickup"
@@ -69,15 +65,11 @@ private:
 	
 	////////////////////////////////////////////Collision//////////////////////////////////////////////////////////////////
 public:
-	//todo check distance
+	
 	//When true only Characters close to the component will be able to interact
 	//When false Character can interact while being far from this component 
-//	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|InteractCollision")
-//	bool bCheckDistance = true;
-
-	//TODO alow to use meshes of the owner instead of 
-//	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|InteractCollision")
-//	bool bUseStaticMeshForClick = false;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|InteractCollision")
+	bool bCheckDistance = true;
 	
 	//Actors that are in range to interact with the owner of this component
 	UPROPERTY(BlueprintReadWrite, Category="Design|InteractCollision")
@@ -88,12 +80,8 @@ public:
 	UPROPERTY()
 	TArray<UActorComponent*> RangeArea;
 
-//	//Shapes that define the click area
-//	UPROPERTY()
-//	TArray<UActorComponent*> ClickArea;
 private:
-		//void InitClickArea();
-		void InitRangeArea();
+	void InitRangeArea();
 	
 	//Adds actor that is close enough to interact
 	UFUNCTION()
@@ -129,6 +117,9 @@ private:
 	//Shows or hides the widget that indicates that Character is close enough to interact
 	UFUNCTION(BlueprintCallable, Category="Design|Widget")
 	bool SetWidgetVisibility (const bool bNewVisibility);
+
+	//If we are using no distance check then init widget visibility
+	void SetNoDistanceVisibility();
 	
 	/////////////////////////////////////////// Interaction //////////////////////////////////////////////////////////
 public:

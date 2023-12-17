@@ -24,8 +24,8 @@ void UClickInteractComponent::BeginPlay()
 	Super::BeginPlay();
 	InitComponentTags();
 	InitRangeArea();
-//	InitClickArea();
 	RangeAreaAddDynamic();
+	SetNoDistanceVisibility();
 }
 
 void UClickInteractComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -63,25 +63,11 @@ void UClickInteractComponent::InitRangeArea()
 	}
 }
 
-/*
-void UClickInteractComponent::InitClickArea()
-{
-	if(!ClickAreaTag.IsValid()) { return; }
-	
-	AActor* Owner = this->GetOwner();
-	TArray<UActorComponent*> Components = Owner->GetComponentsByTag(UShapeComponent::StaticClass(), ClickAreaTag.GetTagName());
-
-	ClickArea.Empty();
-	for (auto& Element : Components)
-	{
-		ClickArea.Add(Element);
-	}
-}
-*/
  
 void UClickInteractComponent::OnComponentRangeBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (!bCheckDistance) {return;}
 	ActorsInRange.Add(OtherActor);
 	UpdateWidgetVisibility();
 }
@@ -89,6 +75,7 @@ void UClickInteractComponent::OnComponentRangeBeginOverlap(UPrimitiveComponent* 
 void UClickInteractComponent::OnComponentRangeEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 									 UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+	if (!bCheckDistance) {return;}
 	ActorsInRange.Remove(OtherActor);
 	UpdateWidgetVisibility();
 }
@@ -117,7 +104,6 @@ void UClickInteractComponent::UpdateWidgetVisibility()
 	{
 		SetWidgetVisibility(true);
 	}
-	return;
 }
 
 void UClickInteractComponent::TryInteractWith(const AActor* InteractingCharacter)
@@ -125,10 +111,12 @@ void UClickInteractComponent::TryInteractWith(const AActor* InteractingCharacter
 	if(!InteractingCharacter) { return; }
 	if (!InteractActions.LoadSynchronous()) { return; }
 	if (!InteractionType.IsValid()) { return; }
-
-	//Is the character close enough?
-	if (!ActorsInRange.Contains(InteractingCharacter)) { return; }
 	
+	//Is the character close enough?
+	if(bCheckDistance)
+	{
+		if (!ActorsInRange.Contains(InteractingCharacter)) { return; }
+	}
 	UInteractActions* Actions = UInteractActionsManager::GetInteractActions(InteractActions);
 	if (!Actions) { return; }
 	
@@ -186,4 +174,12 @@ bool UClickInteractComponent::SetWidgetVisibility(const bool bNewVisibility)
 	//Spawn failed therefore we cleanup
 	WidgetComponent->SetWidget(nullptr);
 	return false;
+}
+
+void UClickInteractComponent::SetNoDistanceVisibility()
+{
+	if (!bCheckDistance)
+	{
+		SetWidgetVisibility(true);
+	}
 }
