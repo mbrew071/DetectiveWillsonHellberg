@@ -17,7 +17,7 @@ class CLICKINTERACTIONSYSTEM_API UInteractActions : public UObject
 public:	
 	//Override this function.
 	UFUNCTION(BlueprintNativeEvent)
-	void PerformInteraction(const AActor* OwningActor, const AActor* InteractionTarget, const FGameplayTag InteractionType);
+	void PerformInteraction(const AActor* InteractingCharacter, const AActor* InteractionTarget, const FGameplayTag InteractionType);
 	
 	//TODO On Interaction finished
 	//TODO Create interface for calling PerformInteraction

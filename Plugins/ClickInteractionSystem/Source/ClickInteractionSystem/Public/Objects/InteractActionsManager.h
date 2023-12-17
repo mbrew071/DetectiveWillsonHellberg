@@ -7,9 +7,7 @@
 #include "InteractActionsManager.generated.h"
 
 class UInteractActions;
-/**
- * 
- */
+
 UCLASS()
 class CLICKINTERACTIONSYSTEM_API UInteractActionsManager : public UObject
 {

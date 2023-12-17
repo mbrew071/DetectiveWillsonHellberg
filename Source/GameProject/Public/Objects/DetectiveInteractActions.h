@@ -11,6 +11,6 @@ class GAMEPROJECT_API UDetectiveInteractActions : public UInteractActions
 {
 	GENERATED_BODY()
 	
-	void PerformInteraction_Implementation(const AActor* OwningActor, const AActor* InteractionTarget,
+	void PerformInteraction_Implementation(const AActor* InteractingCharacter, const AActor* InteractionTarget,
 	                                       const FGameplayTag InteractionType) override;
 };

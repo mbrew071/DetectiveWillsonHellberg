@@ -15,24 +15,17 @@ UClickInteractComponent::UClickInteractComponent()
 {
 	//Idk This doesnt work, no idea how to default it to a blueprint widget class
 	//WidgetClass = TSoftClassPtr<UUserWidget>(FString::Printf(TEXT("%s/Plugins/ClickInteractionSystem/Content/WBP_InteractPin.uasset"), *FPaths::ProjectContentDir()));
-
 	InitClickInteractComponent();
-	InitComponentRange();
-	InitClickArea();
 	InitWidgetComponent();
 }
 
 void UClickInteractComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	InitTags();
-
-	//TODO try do these on construction
-	if (ComponentRange)
-	{
-		ComponentRange->OnComponentBeginOverlap.AddDynamic(this, &UClickInteractComponent::OnComponentRangeBeginOverlap);
-		ComponentRange->OnComponentEndOverlap.AddDynamic(this, &UClickInteractComponent::OnComponentRangeEndOverlap);
-	}
+	InitComponentTags();
+	InitRangeArea();
+	InitClickArea();
+	RangeAreaAddDynamic();
 }
 
 void UClickInteractComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -48,7 +41,7 @@ void UClickInteractComponent::InitClickInteractComponent()
 
 //////////////////////////////////////////////// Tags  /////////////////////////////////////////////////////////////
 
-void UClickInteractComponent::InitTags()
+void UClickInteractComponent::InitComponentTags()
 {
 	if (!ComponentTag.IsValid()) { UE_LOG(LogTemp, Error, TEXT("ComponentTag is invalid tag in ClickInteractComponent")) }
 	ComponentTags.Add(ComponentTag.GetTagName());
@@ -56,67 +49,94 @@ void UClickInteractComponent::InitTags()
 
 //////////////////////////////////////////////// Collision /////////////////////////////////////////////////////////////
 
-void UClickInteractComponent::InitComponentRange()
+void UClickInteractComponent::InitRangeArea()
 {
-	//Basic
-	ComponentRange = CreateDefaultSubobject<UBoxComponent>(TEXT("ComponentRange"));
-	ComponentRange->SetupAttachment(this);
+	if(!ClickAreaTag.IsValid()) { return; }
 	
-	ComponentRange->SetBoxExtent(FVector(64.0,64.0,64.0));
-	ComponentRange->PrimaryComponentTick.bCanEverTick = false;
-	ComponentRange->PrimaryComponentTick.bStartWithTickEnabled = false;
-	
-	ComponentRange->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
-	ComponentRange->SetCollisionResponseToAllChannels(ECR_Ignore);
-	ComponentRange->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	AActor* Owner = this->GetOwner();
+	TArray<UActorComponent*> Components = Owner->GetComponentsByTag(UShapeComponent::StaticClass(), RangeAreaTag.GetTagName());
+
+	RangeArea.Empty();
+	for (auto& Element : Components)
+	{
+		RangeArea.Add(Element);
+	}
 }
 
 void UClickInteractComponent::InitClickArea()
 {
-	//Basic
-	ClickArea = CreateDefaultSubobject<UBoxComponent>(TEXT("ClickArea"));
-	ClickArea->SetupAttachment(this);
+	if(!ClickAreaTag.IsValid()) { return; }
 	
-	ClickArea->PrimaryComponentTick.bCanEverTick = false;
-	ClickArea->PrimaryComponentTick.bStartWithTickEnabled = false;
-	
-	ClickArea->ShapeColor = FColor::Green;
+	AActor* Owner = this->GetOwner();
+	TArray<UActorComponent*> Components = Owner->GetComponentsByTag(UShapeComponent::StaticClass(), ClickAreaTag.GetTagName());
 
-	ClickArea->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
-	ClickArea->SetCollisionResponseToAllChannels(ECR_Ignore);
-	ClickArea->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	ClickArea.Empty();
+	for (auto& Element : Components)
+	{
+		ClickArea.Add(Element);
+	}
 }
 
 void UClickInteractComponent::OnComponentRangeBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	ActorsInRange.Add(OtherActor);
-	SetWidgetVisibility(true);
+	UpdateWidgetVisibility();
 }
 
 void UClickInteractComponent::OnComponentRangeEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 									 UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	ActorsInRange.Remove(OtherActor);
-	SetWidgetVisibility(false);
+	UpdateWidgetVisibility();
+}
+
+void UClickInteractComponent::RangeAreaAddDynamic()
+{
+	//TODO try do these on construction
+	for (auto& Element : RangeArea)
+	{
+		UShapeComponent* ShapeComponent = static_cast<UShapeComponent*>(Element);
+		if(ShapeComponent)
+		{
+			ShapeComponent->OnComponentBeginOverlap.AddDynamic(this, &UClickInteractComponent::OnComponentRangeBeginOverlap);
+			ShapeComponent->OnComponentEndOverlap.AddDynamic(this, &UClickInteractComponent::OnComponentRangeEndOverlap);
+		}
+	}
+}
+
+void UClickInteractComponent::UpdateWidgetVisibility()
+{
+	if(ActorsInRange.IsEmpty())
+	{
+		SetWidgetVisibility(false);
+	}
+	else
+	{
+		SetWidgetVisibility(true);
+	}
+	return;
 }
 
 bool UClickInteractComponent::TryInteractWith(const AActor* InteractingCharacter)
 {
 	if(!InteractingCharacter) { return false; }
-	if (!InteractActions.IsValid()) { return false; }
-	UInteractActions* Actions = UInteractActionsManager::GetInteractActions(InteractActions);
+	if (!InteractActions.LoadSynchronous()) { return false; }
+	if (!InteractionType.IsValid()) { return false; }
 
-	if (InteractionType.IsValid()){ return false; }
+	//Is the character close enough?
+	if (!ActorsInRange.Contains(InteractingCharacter)) { return false; }
+	
+	UInteractActions* Actions = UInteractActionsManager::GetInteractActions(InteractActions);
+	if (!Actions) { return false; }
 	
 	Actions->PerformInteraction(InteractingCharacter, GetOwner(), InteractionType);
-	
 	return true;
 }
 
 void UClickInteractComponent::TryInteractWith_I_Implementation(const AActor* InteractingCharacter)
 {
-	//IClickInteractComponent_I::TryInteractWith_I_Implementation(OwningActor, InteractionTarget);
+	//IClickInteractComponent_I::TryInteractWith_I_Implementation(InteractingCharacter);
 	TryInteractWith(InteractingCharacter);
 }
 

@@ -6,7 +6,7 @@
 #include "GameplayTagContainer.h"
 
 
-void UInteractActions::PerformInteraction_Implementation(const AActor* OwningActor, const AActor* InteractionTarget,
+void UInteractActions::PerformInteraction_Implementation(const AActor* InteractingCharacter, const AActor* InteractionTarget,
                                                          const FGameplayTag InteractionType)
 {
 	// Implement this by children

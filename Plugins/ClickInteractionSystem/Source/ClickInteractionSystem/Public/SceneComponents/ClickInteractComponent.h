@@ -14,7 +14,7 @@
 #include "ClickInteractComponent.generated.h"
 
 class UInteractActions;
-class USphereComponent;
+//class USphereComponent;
 class UWidgetComponent;
 class UBoxComponent;
 
@@ -45,6 +45,16 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|Tags")
 	FGameplayTag ComponentTag = FGameplayTag::RequestGameplayTag(FName("SceneComponent.ClickInteract"));
 
+	//Tags for collision components that will be used as Range area
+	//eg. "SceneComponent.ClickInteract.RangeArea"
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|Tags")
+	FGameplayTag RangeAreaTag = FGameplayTag::RequestGameplayTag(FName("SceneComponent.ClickInteract.RangeArea"));
+
+	//Tags for collision components that will be used as Range area
+	//eg. "SceneComponent.ClickInteract.ClickArea"
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|Tags")
+	FGameplayTag ClickAreaTag = FGameplayTag::RequestGameplayTag(FName("SceneComponent.ClickInteract.ClickArea"));
+	
 	//Tag for the type of interaction that this component has
 	//eg. "InteractionType.Pickup"
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|Tags")
@@ -56,36 +66,32 @@ public:
 	FGameplayTag OverlapTarget = FGameplayTag::RequestGameplayTag(FName("Actor.Character.Player"));
 
 private:	
-	void InitTags();
+	void InitComponentTags();
 	
 	////////////////////////////////////////////Collision//////////////////////////////////////////////////////////////////
 public:
+	//todo check distance
 	//When true only Characters close to the component will be able to interact
 	//When false Character can interact while being far from this component 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|InteractCollision")
-	bool bCheckDistance = true;
+//	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|InteractCollision")
+//	bool bCheckDistance = true;
 	
 	//Actors that are in range to interact with the owner of this component
 	UPROPERTY(BlueprintReadWrite, Category="Design|InteractCollision")
 	TArray<AActor*> ActorsInRange;
+
+public:	
+	//Shapes that define the range area
+	UPROPERTY()
+	TArray<UActorComponent*> RangeArea;
+
+	//Shapes that define the click area
+	UPROPERTY()
+	TArray<UActorComponent*> ClickArea;
+private:
+		void InitClickArea();
+		void InitRangeArea();
 	
-public:
-	//This Sphere checks if the character is near enough to interact with owner of this component
-	//Only Characters overlapped by this collision can interact by clicking on click collision
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|InteractCollision")
-	UBoxComponent* ComponentRange;
-
-private:
-	void InitComponentRange();
-
-public:
-	//Collision which will catch clicks
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|InteractCollision")
-	UBoxComponent* ClickArea;
-
-private:
-	void InitClickArea();
-
 	//Adds actor that is close enough to interact
 	UFUNCTION()
 	void OnComponentRangeBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
@@ -95,7 +101,10 @@ private:
 	UFUNCTION()
 	void OnComponentRangeEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	                                 UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	void RangeAreaAddDynamic();
 
+	// It updates visibility of widget, Called when character enters or leaves Range Collision
+	void UpdateWidgetVisibility();
 
 	/////////////////////////////////////////// Widget //////////////////////////////////////////////////////////
 
@@ -139,8 +148,8 @@ public:
  *	0. Player controller -> Set "EnableClickEvents" to true (without this I wont be able to click on collision)
  *	1. Add this component to an actor
  *	2. Set Tags
- *	3. Set ClickCollision Collision ObjectType (to eg. "Interactable", Create new collision channel if needed)
- *	4. Set RangeCollision Collision to overlap Character (eg. ignore everything, overlap Pawn)
+ *	3. Setup ClickArea Collision ObjectType (to eg. "Interactable", Create new collision channel if needed)
+ *	4. Setup RangeArea Collision to overlap Character (eg. ignore everything, overlap Pawn)
  *	5. Set WidgetClass (if I want a widget to spawn when character is in range)
  *	6. Set Interaction class. (Each project should have a custom interaction class)
  */
