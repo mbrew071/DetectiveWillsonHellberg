@@ -68,6 +68,7 @@ void UClickInteractComponent::OnComponentRangeBeginOverlap(UPrimitiveComponent* 
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (!bCheckDistance) {return;}
+	if(!OtherActor->ActorHasTag(OverlapTarget.GetTagName())) {return;}
 	ActorsInRange.Add(OtherActor);
 	UpdateWidgetVisibility();
 }
@@ -76,6 +77,7 @@ void UClickInteractComponent::OnComponentRangeEndOverlap(UPrimitiveComponent* Ov
 									 UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	if (!bCheckDistance) {return;}
+	if(!OtherActor->ActorHasTag(OverlapTarget.GetTagName())) {return;}
 	ActorsInRange.Remove(OtherActor);
 	UpdateWidgetVisibility();
 }

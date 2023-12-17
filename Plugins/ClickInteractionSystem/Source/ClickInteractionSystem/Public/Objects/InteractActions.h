@@ -15,7 +15,7 @@ class CLICKINTERACTIONSYSTEM_API UInteractActions : public UObject
 	GENERATED_BODY()
 
 public:	
-	//Override this function.
+	//Override this function. //BlueprintCallable, Blueprintable
 	UFUNCTION(BlueprintNativeEvent)
 	void PerformInteraction(const AActor* InteractingCharacter, const AActor* InteractionTarget, const FGameplayTag InteractionType);
 	
