@@ -13,17 +13,9 @@ class UItem_I : public UInterface
 	GENERATED_BODY()
 };
 
-/**
- * 
- */
 class GAMEPROJECT_API IItem_I
 {
 	GENERATED_BODY()
 public:
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void SetWidgetVisibility_I(const bool bNewVisibility);
 	
-
-	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
-public:
 };

@@ -8,10 +8,6 @@
 #include "Structures/ItemData.h"
 #include "Item.generated.h"
 
-class UWidgetComponent;
-class UStaticMeshComponent;
-class USphereComponent;
-
 UCLASS(Abstract)
 class GAMEPROJECT_API AItem : public AActor, public IItem_I
 {
@@ -30,46 +26,20 @@ public:
 	//////////////////////////////////////////////Item Data//////////////////////////////////////////////////////
 public:
 	//Data for this item 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Data")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|ItemData")
 	FItemData ItemData;
 
 	////////////////////////////////////////General///////////////////////////////////////////////
 public:
-	//Primary collision component for the item
+	//Root
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	USceneComponent* SceneComponent;
 	
 private:
-	// Initializes all components, setups attachments
-	void BasicInitComponents();
+	// Initializes root
+	void InitSceneComponent();
 
 	//Initializes tags for that actor
 	void InitTags();
 	
-	///////////////////////////////////////////Collision//////////////////////////////////////////////////////////
-private:
-	//Initializes primary collision for item
-	void InitCollision();
-public:
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Collision")
-	USphereComponent* SphereComponent;
-
-	///////////////////////////////////////////Widget//////////////////////////////////////////////////////////
-public:
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Widget")
-	UWidgetComponent* WidgetComponent;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Widget")
-	TSoftClassPtr<UUserWidget> WidgetClass;
-
-	//Ref to spawned UserWidget
-	UPROPERTY()
-	UUserWidget* UserWidget;
-	
-private:
-	UFUNCTION(BlueprintCallable, Category="Widget")
-	bool SetWidgetVisibility (const bool bNewVisibility);
-	
-public:
-	virtual void SetWidgetVisibility_I_Implementation(const bool bNewVisibility) override;
 };
