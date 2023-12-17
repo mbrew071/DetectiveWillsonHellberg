@@ -24,7 +24,7 @@ void UClickInteractComponent::BeginPlay()
 	Super::BeginPlay();
 	InitComponentTags();
 	InitRangeArea();
-	InitClickArea();
+//	InitClickArea();
 	RangeAreaAddDynamic();
 }
 
@@ -51,7 +51,7 @@ void UClickInteractComponent::InitComponentTags()
 
 void UClickInteractComponent::InitRangeArea()
 {
-	if(!ClickAreaTag.IsValid()) { return; }
+	if(!RangeAreaTag.IsValid()) { return; }
 	
 	AActor* Owner = this->GetOwner();
 	TArray<UActorComponent*> Components = Owner->GetComponentsByTag(UShapeComponent::StaticClass(), RangeAreaTag.GetTagName());
@@ -63,6 +63,7 @@ void UClickInteractComponent::InitRangeArea()
 	}
 }
 
+/*
 void UClickInteractComponent::InitClickArea()
 {
 	if(!ClickAreaTag.IsValid()) { return; }
@@ -76,7 +77,8 @@ void UClickInteractComponent::InitClickArea()
 		ClickArea.Add(Element);
 	}
 }
-
+*/
+ 
 void UClickInteractComponent::OnComponentRangeBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -118,25 +120,24 @@ void UClickInteractComponent::UpdateWidgetVisibility()
 	return;
 }
 
-bool UClickInteractComponent::TryInteractWith(const AActor* InteractingCharacter)
+void UClickInteractComponent::TryInteractWith(const AActor* InteractingCharacter)
 {
-	if(!InteractingCharacter) { return false; }
-	if (!InteractActions.LoadSynchronous()) { return false; }
-	if (!InteractionType.IsValid()) { return false; }
+	if(!InteractingCharacter) { return; }
+	if (!InteractActions.LoadSynchronous()) { return; }
+	if (!InteractionType.IsValid()) { return; }
 
 	//Is the character close enough?
-	if (!ActorsInRange.Contains(InteractingCharacter)) { return false; }
+	if (!ActorsInRange.Contains(InteractingCharacter)) { return; }
 	
 	UInteractActions* Actions = UInteractActionsManager::GetInteractActions(InteractActions);
-	if (!Actions) { return false; }
+	if (!Actions) { return; }
 	
 	Actions->PerformInteraction(InteractingCharacter, GetOwner(), InteractionType);
-	return true;
 }
 
 void UClickInteractComponent::TryInteractWith_I_Implementation(const AActor* InteractingCharacter)
 {
-	//IClickInteractComponent_I::TryInteractWith_I_Implementation(InteractingCharacter);
+	IClickInteractComponent_I::TryInteractWith_I_Implementation(InteractingCharacter);
 	TryInteractWith(InteractingCharacter);
 }
 

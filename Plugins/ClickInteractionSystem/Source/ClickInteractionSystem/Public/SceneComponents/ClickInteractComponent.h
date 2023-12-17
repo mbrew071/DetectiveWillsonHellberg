@@ -14,7 +14,6 @@
 #include "ClickInteractComponent.generated.h"
 
 class UInteractActions;
-//class USphereComponent;
 class UWidgetComponent;
 class UBoxComponent;
 
@@ -52,8 +51,8 @@ public:
 
 	//Tags for collision components that will be used as Range area
 	//eg. "SceneComponent.ClickInteract.ClickArea"
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|Tags")
-	FGameplayTag ClickAreaTag = FGameplayTag::RequestGameplayTag(FName("SceneComponent.ClickInteract.ClickArea"));
+//  UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|Tags")
+//	FGameplayTag ClickAreaTag = FGameplayTag::RequestGameplayTag(FName("SceneComponent.ClickInteract.ClickArea"));
 	
 	//Tag for the type of interaction that this component has
 	//eg. "InteractionType.Pickup"
@@ -75,6 +74,10 @@ public:
 	//When false Character can interact while being far from this component 
 //	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|InteractCollision")
 //	bool bCheckDistance = true;
+
+	//TODO alow to use meshes of the owner instead of 
+//	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|InteractCollision")
+//	bool bUseStaticMeshForClick = false;
 	
 	//Actors that are in range to interact with the owner of this component
 	UPROPERTY(BlueprintReadWrite, Category="Design|InteractCollision")
@@ -85,11 +88,11 @@ public:
 	UPROPERTY()
 	TArray<UActorComponent*> RangeArea;
 
-	//Shapes that define the click area
-	UPROPERTY()
-	TArray<UActorComponent*> ClickArea;
+//	//Shapes that define the click area
+//	UPROPERTY()
+//	TArray<UActorComponent*> ClickArea;
 private:
-		void InitClickArea();
+		//void InitClickArea();
 		void InitRangeArea();
 	
 	//Adds actor that is close enough to interact
@@ -137,7 +140,8 @@ public:
 private:
 	//Executed when Player clicked on an instance of this component
 	UFUNCTION(BlueprintCallable)
-	bool TryInteractWith(const AActor* InteractingCharacter);
+	void
+	TryInteractWith(const AActor* InteractingCharacter);
 
 public:
 	virtual void TryInteractWith_I_Implementation(const AActor* InteractingCharacter) override;
