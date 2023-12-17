@@ -41,7 +41,7 @@ public:
 	
 private:
 	// Initializes all components, setups attachments
-	void InitComponents();
+	void BasicInitComponents();
 
 	//Initializes tags for that actor
 	void InitTags();
@@ -65,9 +65,11 @@ public:
 	//Ref to spawned UserWidget
 	UPROPERTY()
 	UUserWidget* UserWidget;
+	
 private:
 	UFUNCTION(BlueprintCallable, Category="Widget")
 	bool SetWidgetVisibility (const bool bNewVisibility);
+	
 public:
 	virtual void SetWidgetVisibility_I_Implementation(const bool bNewVisibility) override;
 };

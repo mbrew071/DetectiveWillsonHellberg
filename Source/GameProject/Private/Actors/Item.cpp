@@ -11,7 +11,7 @@ AItem::AItem()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	InitComponents();
+	BasicInitComponents();
 	InitCollision();
 	InitTags();
 }
@@ -31,7 +31,7 @@ void AItem::Tick(float DeltaTime)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void AItem::InitComponents()
+void AItem::BasicInitComponents()
 {
 	SceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("SceneComponent"));
 	RootComponent = SceneComponent;
@@ -42,11 +42,13 @@ void AItem::InitComponents()
 	WidgetComponent->SetupAttachment(SceneComponent);
 	WidgetComponent->PrimaryComponentTick.bCanEverTick = false;
 	WidgetComponent->PrimaryComponentTick.bStartWithTickEnabled = false;
+	WidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
 	
 	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
 	SphereComponent->SetupAttachment(SceneComponent);
 	SphereComponent->PrimaryComponentTick.bCanEverTick = false;
 	SphereComponent->PrimaryComponentTick.bStartWithTickEnabled = false;
+	SphereComponent->SetSphereRadius(40.f, false);
 }
 
 void AItem::InitTags()
@@ -60,6 +62,8 @@ void AItem::InitCollision()
 	SphereComponent->CanCharacterStepUpOn = ECB_No;
 }
 
+///////////////////////////////////////////Widget//////////////////////////////////////////////////////////
+
 bool AItem::SetWidgetVisibility(const bool bNewVisibility)
 {
 	if (!WidgetComponent) { return false; }
@@ -68,11 +72,8 @@ bool AItem::SetWidgetVisibility(const bool bNewVisibility)
 		//remove current widget 
 		if (UserWidget) {UserWidget->RemoveFromParent();}
 		if (UserWidget) {UserWidget->Destruct();}
-
-		//outro
+		
 		WidgetComponent->SetWidget(nullptr);
-		WidgetComponent->SetVisibility(bNewVisibility);
-		WidgetComponent->SetHiddenInGame(!bNewVisibility);
 		return true;
 	}
 
@@ -88,20 +89,15 @@ bool AItem::SetWidgetVisibility(const bool bNewVisibility)
 
 		//Spawn new
 		UserWidget = CreateWidget<UUserWidget>(GetWorld(), WidgetClassLoaded);
-		
 		if (!UserWidget) { return false; }
 
 		//Spawned Succeeded therefore we initialize:
-		UserWidget->AddToViewport();
 		WidgetComponent->SetWidget(UserWidget);
-		WidgetComponent->SetVisibility(bNewVisibility);
-		WidgetComponent->SetHiddenInGame(!bNewVisibility);
 		return true;
 	}
+	
 	//Spawn failed therefore we cleanup
 	WidgetComponent->SetWidget(nullptr);
-	WidgetComponent->SetVisibility(bNewVisibility);
-	WidgetComponent->SetHiddenInGame(!bNewVisibility);
 	return false;
 }
 
