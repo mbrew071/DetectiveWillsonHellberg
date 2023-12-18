@@ -119,10 +119,19 @@ void UClickInteractComponent::TryInteractWith(const AActor* InteractingCharacter
 	{
 		if (!ActorsInRange.Contains(InteractingCharacter)) { return; }
 	}
-	UInteractActions* Actions = UInteractActionsManager::GetInteractActions(InteractActions);
-	if (!Actions) { return; }
-	
-	Actions->PerformInteraction(InteractingCharacter, GetOwner(), InteractionType);
+
+	//TODO FIX InteractActionsManager. Atm it crashes engine. To crash
+	//1Run engine
+	//2. Recompile Blueprint child of UInteractActions
+	//3. Try to interact with something
+	  
+	//UInteractActions* Actions = UInteractActionsManager::GetInteractActions(InteractActions);
+	//if (!Actions) { return; }
+	//UE_LOG(LogTemp, Error, TEXT("NewInstance is not valid"))
+	//Actions->PerformInteraction(InteractingCharacter, GetOwner(), InteractionType);
+
+	UInteractActions* NewInstance = NewObject<UInteractActions>(GetTransientPackage(), InteractActions.LoadSynchronous(), NAME_Object);
+	NewInstance->PerformInteraction(InteractingCharacter, GetOwner(), InteractionType);
 }
 
 void UClickInteractComponent::TryInteractWith_I_Implementation(const AActor* InteractingCharacter)

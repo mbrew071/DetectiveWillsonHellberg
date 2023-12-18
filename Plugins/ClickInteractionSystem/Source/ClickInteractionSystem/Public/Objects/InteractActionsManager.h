@@ -13,8 +13,8 @@ class CLICKINTERACTIONSYSTEM_API UInteractActionsManager : public UObject
 {
 	GENERATED_BODY()
 	
-private:
-	static TMap<TSoftClassPtr<UInteractActions>, TSharedPtr<UInteractActions>> InteractActions;
+public:
+	static TMap<TSoftClassPtr<UInteractActions>, UInteractActions*> InteractActions;
 
 public:
 	UFUNCTION(BlueprintCallable)

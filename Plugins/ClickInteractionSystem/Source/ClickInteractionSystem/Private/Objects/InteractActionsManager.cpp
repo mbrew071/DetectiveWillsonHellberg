@@ -4,28 +4,20 @@
 #include "Objects/InteractActionsManager.h"
 #include "Objects/InteractActions.h"
 
-TMap<TSoftClassPtr<UInteractActions>, TSharedPtr<UInteractActions>> UInteractActionsManager::InteractActions;
+TMap<TSoftClassPtr<UInteractActions>, UInteractActions*> UInteractActionsManager::InteractActions;
 UInteractActions* UInteractActionsManager::GetInteractActions(TSoftClassPtr<UInteractActions> ActionClass)
 {
 	UClass* ActionClassLoaded = ActionClass.LoadSynchronous();
-	if(!ActionClass.LoadSynchronous()) {  return nullptr; } 
-
-	//TSharedPtr<UInteractActions> NewInstance = MakeShareable(NewObject<UInteractActions>(GetTransientPackage(),ActionClassLoaded, NAME_Object));
-	//return NewInstance.Get();
-
-
-	TSharedPtr<UInteractActions>* ExistingInstance = InteractActions.Find(ActionClass);
+	//if(!ActionClass.LoadSynchronous()) {  return nullptr; } 
+	
+	UInteractActions** ExistingInstance = InteractActions.Find(ActionClass);
 	if (ExistingInstance)
 	{
-		return ExistingInstance->Get();
+		return *ExistingInstance;
 	}
 	
-	// Create the instance if it doesn't exist
-	// Consider "RF_MarkAsRootSet" if I dont want to get garbage collected
-	TSharedPtr<UInteractActions> NewInstance = MakeShareable(NewObject<UInteractActions>(GetTransientPackage(),ActionClassLoaded, NAME_None,RF_MarkAsRootSet));
+	UInteractActions* NewInstance = NewObject<UInteractActions>(GetTransientPackage(), ActionClass.LoadSynchronous(),
+	                                                            NAME_Object);
 	InteractActions.Add(ActionClass, NewInstance);
-
-	return NewInstance.Get();
-
-	
+	return *InteractActions.Find(ActionClass);
 }
