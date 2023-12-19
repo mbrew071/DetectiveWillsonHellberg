@@ -120,8 +120,8 @@ void UClickInteractComponent::TryInteractWith(const AActor* InteractingCharacter
 		if (!ActorsInRange.Contains(InteractingCharacter)) { return; }
 	}
 
-	//TODO FIX InteractActionsManager. Atm it crashes engine. To crash
-	//1Run engine
+	//TODO FIX InteractActionsManager. Atm it crashes engine. To reproduce:
+	//1. Run engine
 	//2. Recompile Blueprint child of UInteractActions
 	//3. Try to interact with something
 	  
@@ -132,11 +132,12 @@ void UClickInteractComponent::TryInteractWith(const AActor* InteractingCharacter
 
 	UInteractActions* NewInstance = NewObject<UInteractActions>(GetTransientPackage(), InteractActions.LoadSynchronous(), NAME_Object);
 	NewInstance->PerformInteraction(InteractingCharacter, GetOwner(), InteractionType);
+	//OnInteractionCompleted.Broadcast();
 }
 
 void UClickInteractComponent::TryInteractWith_I_Implementation(const AActor* InteractingCharacter)
 {
-	IClickInteractComponent_I::TryInteractWith_I_Implementation(InteractingCharacter);
+	//IClickInteractComponent_I::TryInteractWith_I_Implementation(InteractingCharacter, OnInteractionCompleted);
 	TryInteractWith(InteractingCharacter);
 }
 

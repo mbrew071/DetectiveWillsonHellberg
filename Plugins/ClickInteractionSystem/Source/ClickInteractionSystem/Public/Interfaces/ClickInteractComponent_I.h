@@ -20,5 +20,4 @@ public:
 	//InteractingCharacter <=> The Character that interacted with ClickInteractComponent
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void TryInteractWith_I(const AActor* InteractingCharacter);
-	
 };

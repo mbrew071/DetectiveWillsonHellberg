@@ -9,6 +9,10 @@
  * Code executed when interaction takes place
  * will be implemented by Children of this class.
  */
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInteractionEnd, const bool, bSuccess);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInteractionBegin);
+
 UCLASS(Blueprintable, BlueprintType)
 class CLICKINTERACTIONSYSTEM_API UInteractActions : public UObject
 {
@@ -17,8 +21,14 @@ class CLICKINTERACTIONSYSTEM_API UInteractActions : public UObject
 public:	
 	//Override this function.
 	UFUNCTION(BlueprintNativeEvent)
-	void PerformInteraction(const AActor* InteractingCharacter, const AActor* InteractionTarget, const FGameplayTag InteractionType);
+	void PerformInteraction(const AActor* InteractingCharacter, const AActor* InteractionTarget,
+	                        const FGameplayTag InteractionType);
+
+///////////////////////////////////////////////////// DELEGATES ///////////////////////////////////////////
+public:
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FOnInteractionEnd OnInteractionEnd;
 	
-	//TODO On Interaction finished
-	//TODO Create interface for calling PerformInteraction
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FOnInteractionBegin OnInteractionBegin;
 };

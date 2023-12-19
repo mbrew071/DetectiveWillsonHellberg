@@ -9,6 +9,7 @@
 void UInteractActions::PerformInteraction_Implementation(const AActor* InteractingCharacter, const AActor* InteractionTarget,
                                                          const FGameplayTag InteractionType)
 {
+	OnInteractionBegin.Broadcast();
 	// Implement this by children
 }
 

@@ -131,13 +131,16 @@ public:
 private:
 	//Executed when Player clicked on an instance of this component
 	UFUNCTION(BlueprintCallable)
-	void
-	TryInteractWith(const AActor* InteractingCharacter);
+	void TryInteractWith(const AActor* InteractingCharacter);
 
 public:
 	virtual void TryInteractWith_I_Implementation(const AActor* InteractingCharacter) override;
-	
+
+	//////////////////////////////////////// Delegates ///////////////////////////////////////////////////////////
+
 };
+
+
 
 /*	Setup:
  *	0. Player controller -> Set "EnableClickEvents" to true (without this I wont be able to click on collision)
