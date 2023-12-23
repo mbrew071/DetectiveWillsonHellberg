@@ -2,9 +2,9 @@
 
 using UnrealBuildTool;
 
-public class CheckoutLite : ModuleRules
+public class CheckOutLite : ModuleRules
 {
-	public CheckoutLite(ReadOnlyTargetRules Target) : base(Target)
+	public CheckOutLite(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		
@@ -38,6 +38,7 @@ public class CheckoutLite : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+				"Json",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

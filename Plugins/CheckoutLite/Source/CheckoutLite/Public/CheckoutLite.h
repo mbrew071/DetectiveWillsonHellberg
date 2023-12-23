@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 
-class FCheckoutLiteModule : public IModuleInterface
+class FCheckOutLiteModule : public IModuleInterface
 {
 public:
 

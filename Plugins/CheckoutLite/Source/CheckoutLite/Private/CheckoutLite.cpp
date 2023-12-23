@@ -1,15 +1,15 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "CheckoutLite.h"
+#include "CheckOutLite.h"
 
-#define LOCTEXT_NAMESPACE "FCheckoutLiteModule"
+#define LOCTEXT_NAMESPACE "FCheckOutLiteModule"
 
-void FCheckoutLiteModule::StartupModule()
+void FCheckOutLiteModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
 }
 
-void FCheckoutLiteModule::ShutdownModule()
+void FCheckOutLiteModule::ShutdownModule()
 {
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
@@ -17,4 +17,4 @@ void FCheckoutLiteModule::ShutdownModule()
 
 #undef LOCTEXT_NAMESPACE
 	
-IMPLEMENT_MODULE(FCheckoutLiteModule, CheckoutLite)
+IMPLEMENT_MODULE(FCheckOutLiteModule, CheckOutLite)
