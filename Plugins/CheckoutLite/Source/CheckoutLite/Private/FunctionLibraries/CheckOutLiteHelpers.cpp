@@ -4,7 +4,7 @@
 #include "FunctionLibraries/CheckOutLiteHelpers.h"
 
 #include "AssetRegistry/AssetRegistryModule.h"
-#include "Structures/CheckOutSheet.h"
+#include "Structures/CheckOutData.h"
 
 void UCheckOutLiteHelpers::RemoveRowFromDataTable(UDataTable* DataTable, FName RowName)
 {

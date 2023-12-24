@@ -1,16 +1,16 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
-#include "CheckOutSheet.generated.h"
+#include "CheckOutData.generated.h"
 
 USTRUCT(BlueprintType)
-struct FCheckOutSheet : public FTableRowBase
+struct FCheckOutData : public FTableRowBase
 {
 	GENERATED_BODY()
 
 	//Asset that is checked out by user
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	FString Asset;
+	//UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	//FString Asset;
 	
 	//Uset that checked out the asset
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
