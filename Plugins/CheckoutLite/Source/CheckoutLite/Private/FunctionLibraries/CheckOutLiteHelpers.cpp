@@ -3,17 +3,36 @@
 
 #include "FunctionLibraries/CheckOutLiteHelpers.h"
 
-#include "AssetRegistry/AssetRegistryModule.h"
-#include "Structures/CheckOutData.h"
-
-void UCheckOutLiteHelpers::RemoveRowFromDataTable(UDataTable* DataTable, FName RowName)
+bool UCheckOutLiteHelpers::CreateTXT(FString FilePath, FString Content)
 {
-	// Row found, remove it
-	DataTable->RemoveRow(RowName);
-	UE_LOG(LogTemp, Warning, TEXT("Row '%s' removed from DataTable."), *RowName.ToString());
-
-	// Update the asset registry to reflect the changes
-	FAssetRegistryModule::AssetCreated(DataTable);
-	FAssetRegistryModule::AssetRenamed(DataTable, DataTable->GetPathName());
-	
+	if (FFileHelper::SaveStringToFile(Content, *FilePath))
+	{
+		//Successfully wrote to a file 
+		return true;
+	}
+	else
+	{
+		//Writing to a file failed 
+		return true;
+	}
 }
+
+bool UCheckOutLiteHelpers::ReadTXT(FString FilePath, FString& Content)
+{
+	if (!FPlatformFileManager::Get().GetPlatformFile().FileExists(*FilePath))
+	{
+		// File doesnt exist
+		Content = "";
+		return false;
+	}
+	
+	if (!FFileHelper::LoadFileToString(Content, *FilePath))
+	{
+		//Could not read from file
+		Content = "";
+		return false;
+	}
+	
+	return true;
+}
+
