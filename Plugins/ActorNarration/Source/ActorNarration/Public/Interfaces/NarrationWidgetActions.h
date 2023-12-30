@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "Structures/NarrationLine.h"
 #include "UObject/Interface.h"
+#include "SlateBasics.h"
+#include "Components/RichTextBlockDecorator.h"
 #include "NarrationWidgetActions.generated.h"
 
 // This class does not need to be modified.
@@ -22,7 +24,7 @@ class ACTORNARRATION_API INarrationWidgetActions
 public:
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void BeginNarration();
+	void BeginNarration(const UDataTable* Styles, const TArray<TSubclassOf<URichTextBlockDecorator>>& HardClassArray);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void EndNarration();
@@ -31,5 +33,5 @@ public:
 	void DisruptNarration();
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void UpdateNarration(FNarrationLine NarrationLine);
+	void UpdateNarration(const FText& Text);
 };

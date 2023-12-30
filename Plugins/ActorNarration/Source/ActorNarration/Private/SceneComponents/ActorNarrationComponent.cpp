@@ -25,7 +25,7 @@ void UActorNarrationComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 
 ///////////////////////////////////// Narration ///////////////////////////////////////////////////////////////
 
-void UActorNarrationComponent::PlayNarration(FNarrationLine NarrationLine)
+void UActorNarrationComponent::PlayNarration(FNarrationLine NarrationLine, FName NarrationName)
 {
 	ENarrationLineType NarrationLineType = GetNarrationLineType(NarrationLine);
 
@@ -36,15 +36,15 @@ void UActorNarrationComponent::PlayNarration(FNarrationLine NarrationLine)
 	{
 	case ENarrationLineType::Both:
 		{
-			HandleNarrationBoth(NarrationLine);
+			HandleNarrationBoth(NarrationLine, NarrationName);
 		}
 	case ENarrationLineType::TextOnly:
 		{
-			HandleNarrationTextOnly(NarrationLine);
+			HandleNarrationTextOnly(NarrationLine, NarrationName);
 		}
 	case ENarrationLineType::AudioOnly:
 		{
-			HandleNarrationAudioOnly(NarrationLine);
+			HandleNarrationAudioOnly(NarrationLine, NarrationName);
 		}
 	case ENarrationLineType::Empty:
 		{
@@ -52,8 +52,6 @@ void UActorNarrationComponent::PlayNarration(FNarrationLine NarrationLine)
 		}
 	}
 }
-
-
 
 ENarrationLineType UActorNarrationComponent::GetNarrationLineType(const FNarrationLine& NarrationLine)
 {
@@ -85,21 +83,21 @@ ENarrationLineType UActorNarrationComponent::GetNarrationLineType(const FNarrati
 	return ENarrationLineType::Empty;
 }
 
-void UActorNarrationComponent::HandleNarrationBoth(const FNarrationLine& NarrationLine)
+void UActorNarrationComponent::HandleNarrationBoth(const FNarrationLine& NarrationLine, FName& NarrationName)
 {
-	BeginNarration();
+	BeginNarration(NarrationName);
 	EndNarration();
 }
 
-void UActorNarrationComponent::HandleNarrationTextOnly(const FNarrationLine& NarrationLine)
+void UActorNarrationComponent::HandleNarrationTextOnly(const FNarrationLine& NarrationLine, FName& NarrationName)
 {
-	BeginNarration();
+	BeginNarration(NarrationName);
 	EndNarration();
 }
 
-void UActorNarrationComponent::HandleNarrationAudioOnly(const FNarrationLine& NarrationLine)
+void UActorNarrationComponent::HandleNarrationAudioOnly(const FNarrationLine& NarrationLine, FName& NarrationName)
 {
-	BeginNarration();
+	BeginNarration(NarrationName);
 	EndNarration();
 }
 
@@ -108,35 +106,58 @@ void UActorNarrationComponent::HandleNarrationEmpty()
 	UE_LOG(LogTemp, Error, TEXT("Attempted to play an empty narration"));
 }
 
-void UActorNarrationComponent::BeginNarration()
+void UActorNarrationComponent::BeginNarration(FName NarrationName)
 {
 	//Check is any narration currently playing?
-	if (bNarrationOngoing)
+	if (!OngoingNarration.IsNone())
 	{
 		//Cancel previous narration and 
 		DisruptNarration();
 	}
 	//Begin new narration
-	bNarrationOngoing = true;
+	OngoingNarration = NarrationName;
+	
 	OnNarrationBegin.Broadcast();
 }
 
 void UActorNarrationComponent::EndNarration()
 {
-	bNarrationOngoing = false;
+	OngoingNarration = "None";
+	
 	OnNarrationEnd.Broadcast();
+}
+
+void UActorNarrationComponent::NarrationLoop(const FNarrationLine& NarrationLine)
+{
+	//index of current Sequence
+	//int32 SequenceIndex = 0;
+	//index of current word in that sequence
+	int32 CharacterIndex = 0;
+
+	for (auto& Element : NarrationLine.TextSequences)
+	{
+		//FText Text = FText();
+		FString Text;
+		//foreach char in text sequence
+		
+		for (auto& Char : Text.GetCharArray())
+		{
+			// get delay for the char
+			// Wait
+			
+			// append
+		//	Text.Append(static_cast<TChar>(Char));
+
+			//Call interface fucntion 
+		}
+	}
 }
 
 void UActorNarrationComponent::DisruptNarration()
 {
-	//TODO Fajnie gdyby zzwracało FName tej Narration line ktora zostala przerwana
-	//TODO trzeba przemyslec w jaki fajny sposob to osiagnac
-	// Moze bNarrationOngoing zamienić na FName z nazwą obecnie odgrywanej narracji?
-	// i gdy ten FName jest empty to znaczy ze zadna narracja nie jest obecnie grana
-	
-	if (!bNarrationOngoing) { return; }
-	bNarrationOngoing = false;
-	OnNarrationDisrupt.Broadcast();
+	if (OngoingNarration.IsNone()) { return; }
+	OnNarrationDisrupt.Broadcast(OngoingNarration);
+	OngoingNarration = "None";
 }
 
 

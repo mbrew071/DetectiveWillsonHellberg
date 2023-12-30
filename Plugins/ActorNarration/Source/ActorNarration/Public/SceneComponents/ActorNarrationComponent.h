@@ -13,7 +13,7 @@ class UWidgetComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnNarrationBegin);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnNarrationEnd);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnNarrationDisrupt);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNarrationDisrupt, FName ,NarrationName);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ACTORNARRATION_API UActorNarrationComponent : public USceneComponent
@@ -45,33 +45,44 @@ public:
 
 	///////////////////////////////////// Narration ///////////////////////////////////////////////////////////////
 public:
-
-	//When true a narration is currently being played
-	UPROPERTY()
-	bool bNarrationOngoing = false;
 	
-	//Starts playing Narration Line.
-	//When it begins OnLineBegin is called, when it ends OnLineEnd is called.
+	//When other than "None" a narration is currently being played.
+	UPROPERTY()
+	FName OngoingNarration = "None";
+
+	FTimerHandle TimerHandle;
+	
+	/**
+	* Starts playing Narration Line. If other narration is currently ongoing it will be replaced with this new one.
+	* When ongoing narration is replaced by other OnNarrationDisrupt is called
+	* When Narration begins OnNarrationBegin is called,
+	* when Narration ends OnNarrationEnd is called.
+	*
+	* @param NarrationLine	Narration that will be played
+	* @param NarrationName	Must not be "None"
+	*/
 	UFUNCTION(BlueprintCallable, Category="Narration")
-	void PlayNarration(FNarrationLine NarrationLine);
+	void PlayNarration(FNarrationLine NarrationLine, FName NarrationName = "DefaultName");
 
 private:
 	//Figures out and returns the type of provided NarrationLine
 	static ENarrationLineType GetNarrationLineType(const FNarrationLine& NarrationLine);
 
-	void HandleNarrationBoth(const FNarrationLine& NarrationLine);
+	void HandleNarrationBoth(const FNarrationLine& NarrationLine, FName& NarrationName);
 
-	void HandleNarrationTextOnly(const FNarrationLine& NarrationLine);
+	void HandleNarrationTextOnly(const FNarrationLine& NarrationLine, FName& NarrationName);
 	
-	void HandleNarrationAudioOnly(const FNarrationLine& NarrationLine);
+	void HandleNarrationAudioOnly(const FNarrationLine& NarrationLine, FName& NarrationName);
 
 	void HandleNarrationEmpty();
 
 	//Called when Narration begins
-	void BeginNarration();
+	void BeginNarration(FName NarrationName);
 
 	//Called when Narration stops
 	void EndNarration();
+
+	void NarrationLoop(const FNarrationLine& NarrationLine);
 	
 public:	
 	//It stops currently playing narration line.
