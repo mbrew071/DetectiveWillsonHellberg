@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/RichTextBlock.h"
 #include "Components/SceneComponent.h"
 #include "Enumerations/NarrationLineType.h"
 #include "Structures/NarrationLine.h"
@@ -45,6 +46,16 @@ public:
 
 	///////////////////////////////////// Narration ///////////////////////////////////////////////////////////////
 public:
+
+	//TODO Store this in a singleton 
+	//Data table that contains Narration text styles in this project
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UDataTable* TextSytles;
+
+	//TODO Store this in a singleton
+	//Data table that contains Narration text anim styles in this project
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UDataTable* AnimStyles;
 	
 	//When other than "None" a narration is currently being played.
 	UPROPERTY()
