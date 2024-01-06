@@ -3,6 +3,8 @@
 
 #include "SceneComponents/ActorNarrationComponent.h"
 
+#include "Kismet/GameplayStatics.h"
+
 /////////////////////////////////////// GENERAL ///////////////////////////////////////////////////////
 // Sets default values for this component's properties
 UActorNarrationComponent::UActorNarrationComponent()
@@ -95,8 +97,12 @@ void UActorNarrationComponent::HandleNarrationTextOnly(const FNarrationLine& Nar
 	EndNarration();
 }
 
-void UActorNarrationComponent::HandleNarrationAudioOnly(const FNarrationLine& NarrationLine, FName& NarrationName)
+void UActorNarrationComponent::HandleNarrationAudioOnly(const FNarrationLine& NarrationLine, FName& NarrationName) 
 {
+	//No widget wil lbe required
+
+	PlayNarrationAudio(NarrationLine.Audio);
+	
 	BeginNarration(NarrationName);
 	EndNarration();
 }
@@ -151,6 +157,20 @@ void UActorNarrationComponent::NarrationLoop(const FNarrationLine& NarrationLine
 			//Call interface fucntion 
 		}
 	}
+}
+
+void UActorNarrationComponent::PlayNarrationAudio(TSoftObjectPtr<USoundBase> Audio)
+{
+	//Return if Autio is invalid
+	if (!Audio.IsNull()) { UE_LOG(LogTemp, Error, TEXT("Error. null audio object")); return;}
+	
+	USoundBase* AudioLoaded = Audio.LoadSynchronous();
+
+	FVector SpawnLocation = GetOwner()->GetActorLocation();
+	FName AttachPointName = NAME_None;
+	
+	UGameplayStatics::SpawnSoundAttached(AudioLoaded, this, AttachPointName, SpawnLocation, FRotator::ZeroRotator, EAttachLocation::KeepRelativeOffset, true, 1.0f, 1.0f, 0.0f, SoundAttenuation);
+	
 }
 
 void UActorNarrationComponent::DisruptNarration()

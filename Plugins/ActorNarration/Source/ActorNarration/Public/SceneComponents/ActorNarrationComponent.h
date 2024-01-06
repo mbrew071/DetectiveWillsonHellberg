@@ -40,7 +40,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|Widget")
 	UWidgetComponent* WidgetComponent;
 
-	//Widget class that will be displayed when a character is within the interaction range
+	//Widget class that will be displayed when an actor starts narration
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|Widget")
 	TSoftClassPtr<UUserWidget> WidgetClass;
 
@@ -49,19 +49,20 @@ public:
 
 	//TODO Store this in a singleton 
 	//Data table that contains Narration text styles in this project
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	UDataTable* TextSytles;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|Presets")
+	UDataTable* TextStylePresets;
 
 	//TODO Store this in a singleton
 	//Data table that contains Narration text anim styles in this project
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	UDataTable* AnimStyles;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|Presets")
+	UDataTable* TextAnimPresets;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|Presets")
+	USoundAttenuation* SoundAttenuation;
 	
 	//When other than "None" a narration is currently being played.
 	UPROPERTY()
 	FName OngoingNarration = "None";
-
-	FTimerHandle TimerHandle;
 	
 	/**
 	* Starts playing Narration Line. If other narration is currently ongoing it will be replaced with this new one.
@@ -94,6 +95,8 @@ private:
 	void EndNarration();
 
 	void NarrationLoop(const FNarrationLine& NarrationLine);
+
+	void PlayNarrationAudio(TSoftObjectPtr<USoundBase> Audio);
 	
 public:	
 	//It stops currently playing narration line.

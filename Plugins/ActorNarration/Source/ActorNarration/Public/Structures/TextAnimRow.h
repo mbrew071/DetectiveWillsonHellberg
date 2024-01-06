@@ -8,6 +8,11 @@ struct FTextAnimRow : public FTableRowBase
 {
 	GENERATED_BODY()
 public:
+
+	//When true the text's animation will finish 
+	UPROPERTY(BlueprintReadWrite,EditAnywhere)
+	bool bUseAudioTime = false;
+	
 	//Time it takes to show next character of the narration
 	UPROPERTY(BlueprintReadWrite,EditAnywhere)
 	float SecondsPerCharacter = 0.075f;
@@ -32,4 +37,8 @@ public:
 	//-1 means we use MasterDelayAtSpecialChar
 	UPROPERTY(BlueprintReadWrite,EditAnywhere)
 	float DelayAtQuestionMark = -1.0f;
+
+	//-1 means we use MasterDelayAtSpecialChar
+	UPROPERTY(BlueprintReadWrite,EditAnywhere)
+	float OutroDelay = 2.0f;
 };
