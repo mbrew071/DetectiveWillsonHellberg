@@ -29,6 +29,14 @@
 		{
 			"Name": "BlueprintFileUtils",
 			"Enabled": true
+		},
+		{
+			"Name": "CheckOutLite",
+			"Enabled": false
+		},
+		{
+			"Name": "ActorNarration",
+			"Enabled": false
 		}
 	]
 }
