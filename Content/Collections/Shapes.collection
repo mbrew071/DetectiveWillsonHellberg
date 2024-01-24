@@ -3,3 +3,22 @@ Type:Static
 Guid:307F918E-442C-FDE4-A182-FF82D646BA05
 ParentGuid:73BFF184-44C9-1CF0-5097-7398A065407B
 
+/Game/Epic/StarterContent/Shapes/Shape_Cone.Shape_Cone
+/Game/Epic/StarterContent/Shapes/Shape_Cube.Shape_Cube
+/Game/Epic/StarterContent/Shapes/Shape_Cylinder.Shape_Cylinder
+/Game/Epic/StarterContent/Shapes/Shape_NarrowCapsule.Shape_NarrowCapsule
+/Game/Epic/StarterContent/Shapes/Shape_Pipe.Shape_Pipe
+/Game/Epic/StarterContent/Shapes/Shape_Pipe_90.Shape_Pipe_90
+/Game/Epic/StarterContent/Shapes/Shape_Pipe_180.Shape_Pipe_180
+/Game/Epic/StarterContent/Shapes/Shape_Plane.Shape_Plane
+/Game/Epic/StarterContent/Shapes/Shape_QuadPyramid.Shape_QuadPyramid
+/Game/Epic/StarterContent/Shapes/Shape_Sphere.Shape_Sphere
+/Game/Epic/StarterContent/Shapes/Shape_Torus.Shape_Torus
+/Game/Epic/StarterContent/Shapes/Shape_Trim.Shape_Trim
+/Game/Epic/StarterContent/Shapes/Shape_Trim_90_In.Shape_Trim_90_In
+/Game/Epic/StarterContent/Shapes/Shape_Trim_90_Out.Shape_Trim_90_Out
+/Game/Epic/StarterContent/Shapes/Shape_TriPyramid.Shape_TriPyramid
+/Game/Epic/StarterContent/Shapes/Shape_Tube.Shape_Tube
+/Game/Epic/StarterContent/Shapes/Shape_Wedge_A.Shape_Wedge_A
+/Game/Epic/StarterContent/Shapes/Shape_Wedge_B.Shape_Wedge_B
+/Game/Epic/StarterContent/Shapes/Shape_WideCapsule.Shape_WideCapsule
