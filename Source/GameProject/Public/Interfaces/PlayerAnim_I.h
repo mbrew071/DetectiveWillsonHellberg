@@ -23,6 +23,6 @@ public:
 
 	//False -> blendspace 1d
 	//True -> blendspace 3d
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void SetBlendspace(const bool bState);
+	//UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	//void SetBlendspace(const bool bState);
 };
