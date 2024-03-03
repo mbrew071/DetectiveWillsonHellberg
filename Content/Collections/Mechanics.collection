@@ -5,4 +5,5 @@ ParentGuid:00000000-0000-0000-0000-000000000000
 
 /Game/_Main/Mechanics/BP_BoundsCamera0.BP_BoundsCamera0
 /Game/_Main/Mechanics/BP_BoundsCameraBox0.BP_BoundsCameraBox0
+/Game/_Main/Mechanics/BP_LockDoor.BP_LockDoor
 /Game/_Main/Mechanics/BP_PhysicsDoor.BP_PhysicsDoor
