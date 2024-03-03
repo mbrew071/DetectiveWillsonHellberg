@@ -3,3 +3,5 @@ Type:Static
 Guid:560ED6B5-4443-AA29-AEDA-6892AA22AA33
 ParentGuid:00000000-0000-0000-0000-000000000000
 
+/Game/_Main/Mechanics/BP_BoundsCamera0.BP_BoundsCamera0
+/Game/_Main/Mechanics/BP_BoundsCameraBox0.BP_BoundsCameraBox0
