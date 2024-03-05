@@ -18,6 +18,6 @@ class CLICKINTERACTIONSYSTEM_API IClickInteractComponent_I
 
 public:
 	//InteractingCharacter <=> The Character that interacted with ClickInteractComponent
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="ClickInteract")
 	void TryInteractWith_I(const AActor* InteractingCharacter);
 };

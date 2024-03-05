@@ -16,6 +16,7 @@
 class UInteractActions;
 class UWidgetComponent;
 class UBoxComponent;
+class UUserWidget;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent, Blueprintable))
 class CLICKINTERACTIONSYSTEM_API UClickInteractComponent : public USceneComponent, public IClickInteractComponent_I
@@ -103,6 +104,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|Widget")
 	UWidgetComponent* WidgetComponent;
 
+	//TODO STORE IT IN SINGLETON!, Here store only the override
 	//Widget class that will be displayed when a character is within the interaction range
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|Widget")
 	TSoftClassPtr<UUserWidget> WidgetClass;
@@ -123,6 +125,7 @@ private:
 	
 	/////////////////////////////////////////// Interaction //////////////////////////////////////////////////////////
 public:
+	//TODO STORE IT IN SINGLETON!
 	//Class that contains code for interaction behaviour.
 	//When player interacted with sth the action is coded there.
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design|Interaction")
@@ -130,7 +133,7 @@ public:
 
 private:
 	//Executed when Player clicked on an instance of this component
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="ClickInteract")
 	void TryInteractWith(const AActor* InteractingCharacter);
 
 public:
