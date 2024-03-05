@@ -23,15 +23,17 @@ class ACTORNARRATION_API INarrationWidgetActions
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="ActorNarration|Narration")
 	void BeginNarration(const UDataTable* Styles, const TArray<TSubclassOf<URichTextBlockDecorator>>& HardClassArray);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void EndNarration();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void DisruptNarration();
 	
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void UpdateNarration(const FText& Text);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="ActorNarration|Narration")
+	void EndNarration(const bool bSuccess);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="ActorNarration|Narration")
+	void DisruptNarration();
+
+	//This sends an info to the UI that narration text should be displayed
+	//This gets called for each character in Narration, There is delay between calls
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="ActorNarration|Narration")
+	void UpdateNarration(const FString& Text);
 };

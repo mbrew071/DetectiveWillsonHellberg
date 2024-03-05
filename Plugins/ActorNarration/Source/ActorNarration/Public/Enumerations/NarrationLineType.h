@@ -13,8 +13,6 @@ enum ENarrationLineType : uint8
 	TextOnly,
 	
 	//We have Audio file but no text sequences
-	AudioOnly,
+	AudioOnly
 	
-	//We dont have audio and text
-	Empty,
 };

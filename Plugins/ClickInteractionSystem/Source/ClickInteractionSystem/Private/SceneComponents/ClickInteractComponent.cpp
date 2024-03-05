@@ -5,7 +5,7 @@
 
 #include "GameplayTagContainer.h"
 #include "Components/BoxComponent.h"
-
+#include "Blueprint/UserWidget.h"
 #include "Components/WidgetComponent.h"
 #include "Objects/InteractActions.h"
 #include "Objects/InteractActionsManager.h"

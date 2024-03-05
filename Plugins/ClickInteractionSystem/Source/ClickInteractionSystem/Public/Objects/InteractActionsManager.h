@@ -17,7 +17,7 @@ public:
 	static TMap<TSoftClassPtr<UInteractActions>, UInteractActions*> InteractActions;
 
 public:
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="CickInteract")
 	static UInteractActions* GetInteractActions(TSoftClassPtr<UInteractActions> ActionClass);
 	
 };
