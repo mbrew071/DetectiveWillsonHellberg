@@ -33,6 +33,27 @@
 		{
 			"Name": "ActorNarration",
 			"Enabled": false
+		},
+		{
+			"Name": "BoundsCamera",
+			"Enabled": true
+		},
+		{
+			"Name": "CheckOutLite",
+			"Enabled": true
+		},
+		{
+			"Name": "ExecutionTimer",
+			"Enabled": true
+		},
+		{
+			"Name": "LowEntryExtStdLib",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/846c2ad08f164f45b0335ecebf85361e"
+		},
+		{
+			"Name": "ClickInteractionSystem",
+			"Enabled": true
 		}
 	]
 }
