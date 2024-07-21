@@ -1,2 +1,0 @@
-/Binaries/Win64/GameProject.exe filter=lfs diff=lfs merge=lfs -text
-/Binaries/Win64/GameProject.pdb filter=lfs diff=lfs merge=lfs -text
