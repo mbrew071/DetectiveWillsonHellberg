@@ -46,6 +46,14 @@
 		{
 			"Name": "ClickInteractionSystem",
 			"Enabled": true
+		},
+		{
+			"Name": "GameSettings",
+			"Enabled": true
+		},
+		{
+			"Name": "LevelChanger",
+			"Enabled": true
 		}
 	]
 }
