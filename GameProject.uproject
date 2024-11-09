@@ -54,6 +54,10 @@
 		{
 			"Name": "LevelChanger",
 			"Enabled": true
+		},
+		{
+			"Name": "MovieRenderPipeline",
+			"Enabled": true
 		}
 	]
 }
