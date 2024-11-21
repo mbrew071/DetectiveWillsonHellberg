@@ -12,6 +12,8 @@
 #include "UObject/Package.h"
 #include "UObject/UObjectIterator.h"
 
+#include "Engine/AssetManager.h"
+
 #include "Kismet/GameplayStatics.h"
 
 ////Main functions:
@@ -27,18 +29,19 @@ bool ULevelChangeManager::InitializePlugin(TSoftClassPtr<UUserWidget> InTransiti
 	return true;
 }
 
-void ULevelChangeManager::StartWorldTransition(TSoftObjectPtr<UObject> InTargetWorld, bool bInAutoTransition, float InAutoTransitionDelay)
+void ULevelChangeManager::OpenLevel(TSoftObjectPtr<UObject> InTargetWorld, bool bInAutoTransition, float InAutoTransitionDelay, const FString InOptions)
 {
 	if(bIsTransitionOngoing)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Cannot start another transition before previous one ends"));
 		return;
 	}
-
+	
 	bIsTransitionOngoing = true;
 	SoftTargetWorld = InTargetWorld;
 	bAutoTransition = bInAutoTransition;
 	AutoTransitionDelay = InAutoTransitionDelay;
+	Options = InOptions;
 	
 	if (InTargetWorld.IsNull())
 	{
@@ -65,45 +68,14 @@ bool ULevelChangeManager::OpenTransitionWorld()
 		UE_LOG(LogTemp, Error, TEXT("Transition world is not set in project settings"))
 		return false;
 	}
-	FString Package;
-	if (!TSoftObjectPtrToPackage(TransitionWorld, Package))
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to get package for transition world"))
-		return false;
-	}
-	if (!TSoftObjectPtrToPackage(TransitionWorld, Package))
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to get package for transition world"))
-		return false;
-	}
-
+	
 	OnLevelChangeBegin.Broadcast();
-	UGameplayStatics::OpenLevel(GEngine->GetWorldFromContextObject(this, EGetWorldErrorMode::LogAndReturnNull), *Package);
-	FWorldDelegates::OnPostWorldCreation.AddUObject(this, &ULevelChangeManager::OnTransitionWorldCreation);
+	
+	UGameplayStatics::OpenLevelBySoftObjectPtr(GEngine->GetWorldFromContextObject(this, EGetWorldErrorMode::LogAndReturnNull), TransitionWorld);
+	
+	FWorldDelegates::OnWorldPreActorTick.AddUObject(this, &ULevelChangeManager::OnTransitionWorldPreActorTick);
+	
 	return true;
-}
-void ULevelChangeManager::OnTransitionWorldCreation(UWorld* World)
-{
-	//Unbind
-	FWorldDelegates::OnPostWorldCreation.RemoveAll(this);
-	if (World)
-	{
-		if (World)
-		{
-			// Bind to the OnWorldBeginPlay delegate
-			World->OnWorldBeginPlay.AddUObject(this, &ULevelChangeManager::OnTransitionWorldBeginPlay);
-		}
-	}
-}
-
-void ULevelChangeManager::OnTransitionWorldBeginPlay()
-{
-	OnTransitionLevelOpened.Broadcast();
-	CreateTransitionWidget(TransitionWidgetClass);
-
-	//I load it with a frame delay because I need to give time for created widget execute its construction and therefore bind to the "OnTriggerTransitionReady" delegate.
-	//TODO Check if the OnStart override for widget will be early enough to do these binds. And if yes then I wont have to do the frame delay before load
-	LoadWithFrameDelay(SoftTargetWorld, bAutoTransition, AutoTransitionDelay);
 }
 
 bool ULevelChangeManager::GetTransitionWorld(TSoftObjectPtr<UWorld>& OutWorld)
@@ -127,105 +99,15 @@ bool ULevelChangeManager::GetTransitionWorld(TSoftObjectPtr<UWorld>& OutWorld)
 	return false;
 }
 
-///// Target World:
-
-void ULevelChangeManager::LoadTargetWorld(TSoftObjectPtr<UObject> InTargetWorld, bool bInAutoTransition, float InAutoTransitionDelay)
+void ULevelChangeManager::OnTransitionWorldPreActorTick(UWorld* World, ELevelTick LevelTick, float Float)  
 {
-	FString Package;
-	if (!TSoftObjectPtrToPackage(InTargetWorld, Package))
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to convert TSoftObjectPtrToPackage"));
-	}
-
-	if (bInAutoTransition)
-	{
-		LoadPackageAsync(Package, FLoadPackageAsyncDelegate::CreateUObject(this, &ULevelChangeManager::OnLevelAsyncLoadedAutoTrigger, InAutoTransitionDelay));
-	}
-	else
-	{
-		LoadPackageAsync(Package, FLoadPackageAsyncDelegate::CreateUObject(this, &ULevelChangeManager::OnLevelAsyncLoadedNoAutoTrigger));
-	}
-}
-
-void ULevelChangeManager::LoadWithFrameDelay(TSoftObjectPtr<UObject> InTargetWorld, bool bInAutoTransition, float InAutoTransitionDelay)
-{
-	// Access the timer manager from the world context
-	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
-    
-	// Set a very short timer to simulate a one-frame delay
-	FTimerHandle TimerHandle;
+	FWorldDelegates::OnWorldPreActorTick.RemoveAll(this);
 	
-	const float OneFrameDelay = 0.0001f; // Small delay, practically next frame
-
-	auto DelayedWorldLoad = [this, InTargetWorld, bInAutoTransition, InAutoTransitionDelay]()
-	{
-		LoadTargetWorld(InTargetWorld, bInAutoTransition, InAutoTransitionDelay);
-	};
+	OnTransitionLevelOpened.Broadcast();
+	CreateTransitionWidget(TransitionWidgetClass);
 	
-	TimerManager.SetTimer(TimerHandle, DelayedWorldLoad, OneFrameDelay, false);
+	LoadTargetWorld(SoftTargetWorld, bAutoTransition, AutoTransitionDelay);
 }
-
-void ULevelChangeManager::OnLevelAsyncLoadedNoAutoTrigger(const FName& PackageName, UPackage* LoadedPackage, EAsyncLoadingResult::Type Result)
-{
-	OnTargetWorldLoaded.Broadcast(false);
-	GetWorldFromPackage(PackageName, LoadedPackage, TargetWorld);
-	if(!OnTriggerTransitionReady.IsBound())
-	{
-		UE_LOG(LogTemp, Error, TEXT("No function is bound to OnTriggerTransitionReady "));
-	}
-	OnTriggerTransitionReady.Broadcast();
-}
-
-void ULevelChangeManager::OnLevelAsyncLoadedAutoTrigger(const FName& PackageName, UPackage* LoadedPackage,
-	EAsyncLoadingResult::Type Result, float InAutoTransitionDelay)
-{
-	OnTargetWorldLoaded.Broadcast(true);
-	GetWorldFromPackage(PackageName, LoadedPackage, TargetWorld);
-
-	//Trigger immediately if there is no delay
-	if (InAutoTransitionDelay<=0)
-	{
-		TriggerTransition();
-	}
-
-	//There is delay therefore set up Timer:
-	// Access the timer manager from the world context
-	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
-	// Set a very short timer to simulate a one-frame delay
-	FTimerHandle TimerHandle;
-	auto DelayedWorldLoad = [this]()
-	{
-		TriggerTransition();
-	};
-	TimerManager.SetTimer(TimerHandle, DelayedWorldLoad, InAutoTransitionDelay, false);
-}
-
-bool ULevelChangeManager::TriggerTransition()
-{
-	if (!TargetWorld)
-	{
-		UE_LOG(LogTemp, Error, TEXT("TargetLevel is not set"))
-		return false; 
-	}
-
-	//Get path of level to load
-	FString LevelName = TargetWorld->GetOutermost()->GetPathName();
-	
-	// Now use UGameplayStatics to open the level
-	UGameplayStatics::OpenLevel(GEngine->GetWorldFromContextObject(this, EGetWorldErrorMode::LogAndReturnNull), *LevelName);
-	FWorldDelegates::OnPostWorldCreation.AddUObject(this, &ULevelChangeManager::OnTargetLevelOpened);
-	return true;
-}
-void ULevelChangeManager::OnTargetLevelOpened(UWorld* World)
-{
-	FWorldDelegates::OnWorldInitializedActors.RemoveAll(this);
-	TargetWorld = nullptr;
-	SoftTargetWorld = nullptr;
-	bIsTransitionOngoing = false;
-	OnTargetWorldOpened.Broadcast();
-}
-
-//// Widget:
 
 bool ULevelChangeManager::CreateTransitionWidget(TSoftClassPtr<UUserWidget> WidgetClass)
 {
@@ -261,55 +143,122 @@ bool ULevelChangeManager::CreateTransitionWidget(TSoftClassPtr<UUserWidget> Widg
 	return true;
 }
 
-//// Utility:
+///// Target World:
 
-bool ULevelChangeManager::GetWorldFromPackage(const FName& PackageName, UPackage* LoadedPackage, UWorld*& OutWorld)
+void ULevelChangeManager::LoadTargetWorld(TSoftObjectPtr<UObject> InTargetWorld, bool bInAutoTransition, float InAutoTransitionDelay)
 {
-	// Check if the loaded package is valid
-	if (!LoadedPackage)
+    if (InTargetWorld.IsNull())
+    {
+        UE_LOG(LogTemp, Error, TEXT("Null InTargetWorld"));
+        return;
+    }
+
+    // Get the StreamableManager from the AssetManager
+    FStreamableManager& StreamableManager = UAssetManager::GetStreamableManager();
+
+	// Create a delegate to be called when the asset is loaded
+	FStreamableDelegate LoadCompleteDelegate = FStreamableDelegate::CreateUObject(this, &ULevelChangeManager::OnTargetLevelLoaded);
+	
+    // Start the async load
+    CurrentLoadHandle = StreamableManager.RequestAsyncLoad(InTargetWorld.ToSoftObjectPath(), LoadCompleteDelegate);
+
+    if (CurrentLoadHandle.IsValid())
+    {
+        // Set up a timer to update the progress
+        GetWorld()->GetTimerManager().SetTimer(ProgressUpdateTimerHandle, this, &ULevelChangeManager::UpdateLoadProgress, 0.1f, true);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Failed to start async load for target world"));
+    }
+}
+
+void ULevelChangeManager::UpdateLoadProgress()
+{
+	if (CurrentLoadHandle.IsValid())
 	{
-		UE_LOG(LogTemp, Error, TEXT("Async loaded package is invalid"))
-		return false;
-	}
-    
-	// Iterate over all objects in the package
-	for (TObjectIterator<UObject> It; It; ++It)
-	{
-		// Check if the object is in the target package and if it is a level
-		if (It->IsIn(LoadedPackage) && It->IsA<UWorld>())
+		float Progress = CurrentLoadHandle->GetProgress();
+		UE_LOG(LogTemp,Display, TEXT("Progress is %f"), Progress);
+
+		if (CurrentLoadHandle->HasLoadCompleted())
 		{
-			OutWorld = Cast<UWorld>(*It);
-			return true;
+			// Stop the progress update timer
+			GetWorld()->GetTimerManager().ClearTimer(ProgressUpdateTimerHandle);
 		}
 	}
-	UE_LOG(LogTemp, Error, TEXT("No level found in package"))
-	return false; // No level found in the package
 }
 
-bool ULevelChangeManager::TSoftObjectPtrToPackage(const TSoftObjectPtr<UObject>& World, FString& OutPackage)
+void ULevelChangeManager::OnTargetLevelLoaded()
 {
-	//Asset: "/Game/OtherMaps/Level1.Level1"
-	//Package / MountedPath: "/Game/OtherMaps/Level1"
-	
-	if (World.IsNull())
+	OnTargetWorldLoaded.Broadcast(false);
+
+	TargetWorld =nullptr;
+	TargetWorld = Cast<UWorld>(CurrentLoadHandle->GetLoadedAsset());
+
+	if (!TargetWorld)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Cannot get TargetWorld Package because this World is null"));
-		return false;
+		UE_LOG(LogTemp,Error,TEXT("Could not cast loaded asset into UWorld"));
+		return;
 	}
-	
-	FString LString;
-	FString RString;
-	if (!World.ToString().Split(".", &LString, &RString, ESearchCase::IgnoreCase,ESearchDir::FromStart))
+
+	if(bAutoTransition)
 	{
-		return false;
+		//Trigger immediately if there is no delay
+		if (AutoTransitionDelay<=0)
+		{
+			TriggerOpenTargetWorld();
+		}
+		//There is delay therefore set up Timer:
+		// Access the timer manager from the world context
+		FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+		// Set a very short timer to simulate a one-frame delay
+		FTimerHandle TimerHandle;
+		auto DelayedWorldLoad = [this]()
+		{
+			TriggerOpenTargetWorld();
+		};
+		TimerManager.SetTimer(TimerHandle, DelayedWorldLoad, AutoTransitionDelay, false);
 	}
-	OutPackage = LString;
+	else
+	{
+		if(!OnTriggerTransitionReady.IsBound())
+		{
+			UE_LOG(LogTemp, Error, TEXT("No function is bound to OnTriggerTransitionReady "));
+		}
+		OnTriggerTransitionReady.Broadcast();
+	}
+}
+
+bool ULevelChangeManager::TriggerOpenTargetWorld()
+{
+	if (!TargetWorld)
+	{
+		UE_LOG(LogTemp, Error, TEXT("TargetLevel is not set"))
+		return false; 
+	}
+
+	//Get path of level to load
+	FString LevelName = TargetWorld->GetOutermost()->GetPathName();
+	
+	// Now use UGameplayStatics to open the level
+	UGameplayStatics::OpenLevel(GEngine->GetWorldFromContextObject(this, EGetWorldErrorMode::LogAndReturnNull), *LevelName, true, Options);
+	FWorldDelegates::OnPostWorldCreation.AddUObject(this, &ULevelChangeManager::OnTargetLevelOpened);
 	return true;
 }
+
+void ULevelChangeManager::OnTargetLevelOpened(UWorld* World)
+{
+	FWorldDelegates::OnWorldInitializedActors.RemoveAll(this);
+	TargetWorld = nullptr;
+	SoftTargetWorld = nullptr;
+	Options = FString();
+	bIsTransitionOngoing = false;
+	OnTargetWorldOpened.Broadcast();
+}
+
+//// Delegates
 
 bool ULevelChangeManager::IsBound()
 {
 	return OnTriggerTransitionReady.IsBound();
 }
-
-
