@@ -73,6 +73,9 @@ private:
 	
 	UPROPERTY()
 	UWorld* TargetWorld;
+
+	UPROPERTY()
+	UUserWidget* Widget;
 	
 //// Transition World:
 private:
@@ -83,8 +86,9 @@ private:
 	bool GetTransitionWorld(TSoftObjectPtr<UWorld>& OutWorld);
 	
 	bool OpenTransitionWorld();
-	
-	void OnTransitionWorldPreActorTick(UWorld* World, ELevelTick LevelTick, float Float);
+
+	void OnInitialWorldBeginTearDown(UWorld* World);
+	void OnTransitionWorldPreActorTick(UWorld* World, ELevelTick LevelTick, float DeltaSeconds);
 
 //// Widget:
 private:
