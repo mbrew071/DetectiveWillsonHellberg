@@ -72,9 +72,11 @@ bool ULevelChangeManager::OpenTransitionWorld()
 	OnLevelChangeBegin.Broadcast();
 	
 	UGameplayStatics::OpenLevelBySoftObjectPtr(GEngine->GetWorldFromContextObject(this, EGetWorldErrorMode::LogAndReturnNull), TransitionWorld);
+
+	//OnPostWorldInitialization Too early to GetPlayerController inside widget so I cannot do Focus()
+	//OnPostWorldCreation too early for GetWorld()
 	
-	FWorldDelegates::OnWorldPreActorTick.AddUObject(this, &ULevelChangeManager::OnTransitionWorldPreActorTick);
-	
+	FWorldDelegates::OnWorldBeginTearDown.AddUObject(this, &ULevelChangeManager::OnInitialWorldBeginTearDown);
 	return true;
 }
 
@@ -99,7 +101,13 @@ bool ULevelChangeManager::GetTransitionWorld(TSoftObjectPtr<UWorld>& OutWorld)
 	return false;
 }
 
-void ULevelChangeManager::OnTransitionWorldPreActorTick(UWorld* World, ELevelTick LevelTick, float Float)  
+void ULevelChangeManager::OnInitialWorldBeginTearDown(UWorld* World)
+{
+	FWorldDelegates::OnWorldBeginTearDown.RemoveAll(this);
+	FWorldDelegates::OnWorldPreActorTick.AddUObject(this, &ULevelChangeManager::OnTransitionWorldPreActorTick);
+}
+
+void ULevelChangeManager::OnTransitionWorldPreActorTick(UWorld* World, ELevelTick LevelTick, float DeltaSeconds)  
 {
 	FWorldDelegates::OnWorldPreActorTick.RemoveAll(this);
 	
@@ -132,13 +140,13 @@ bool ULevelChangeManager::CreateTransitionWidget(TSoftClassPtr<UUserWidget> Widg
 	}
 	
 	//Spawn new
-	UUserWidget* UserWidget = CreateWidget<UUserWidget>(WorldContext, WidgetClassLoaded);
-	if (!UserWidget)
+	Widget = CreateWidget<UUserWidget>(WorldContext, WidgetClassLoaded);
+	if (!Widget)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to creare a widget of class: %s"), *WidgetClass->GetPathName()); 
 		return false;
 	}
-	UserWidget->AddToViewport(1);
+	Widget->AddToViewport(1);
 	
 	return true;
 }
@@ -164,8 +172,8 @@ void ULevelChangeManager::LoadTargetWorld(TSoftObjectPtr<UObject> InTargetWorld,
 
     if (CurrentLoadHandle.IsValid())
     {
-        // Set up a timer to update the progress
-        GetWorld()->GetTimerManager().SetTimer(ProgressUpdateTimerHandle, this, &ULevelChangeManager::UpdateLoadProgress, 0.1f, true);
+    	// Set up a timer to update the progress
+    	GetWorld()->GetTimerManager().SetTimer(ProgressUpdateTimerHandle, this, &ULevelChangeManager::UpdateLoadProgress, 0.1f, true);
     }
     else
     {
@@ -252,6 +260,7 @@ void ULevelChangeManager::OnTargetLevelOpened(UWorld* World)
 	TargetWorld = nullptr;
 	SoftTargetWorld = nullptr;
 	Options = FString();
+	Widget = nullptr;
 	bIsTransitionOngoing = false;
 	OnTargetWorldOpened.Broadcast();
 }
