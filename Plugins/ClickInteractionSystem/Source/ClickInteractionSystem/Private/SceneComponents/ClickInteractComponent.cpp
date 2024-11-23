@@ -77,13 +77,10 @@ void UClickInteractComponent::InitRangeArea()
 
 void UClickInteractComponent::InitWidgetClass()
 {
-	if ( WidgetClass.IsNull() == false )
+	if ( WidgetClass.IsNull())
 	{
-		return;
+		WidgetClass = GetOwner()->GetWorld()->GetGameInstance()->GetSubsystem<UClickInteractController>()->DefaultWidget;
 	}
-	
-	AActor* Owner = this->GetOwner();
-	WidgetClass = Owner->GetOwner()->GetWorld()->GetGameInstance()->GetSubsystem<UClickInteractController>()->DefaultWidget;
 }
 
 void UClickInteractComponent::RangeAreaAddDynamic()
@@ -142,24 +139,17 @@ void UClickInteractComponent::ShowWidget()
 {
 	if (!WidgetComponent) { return; }
 	
-	TSoftClassPtr<UUserWidget> Class = WidgetClass;
-	if (Class.IsNull())
+	if (WidgetClass.IsNull())
 	{
-		//Try get default class
-		UClickInteractController* Controller = GetOwner()->GetWorld()->GetGameInstance()->GetSubsystem<UClickInteractController>();
-		Class = Controller->DefaultWidget;
-		if (Class.IsNull())
-		{
-			UE_LOG(LogTemp,Warning, TEXT("Cannot load widget because widget classes are not specified."))
-			return;
-		}
+		UE_LOG(LogTemp,Warning, TEXT("Cannot load widget because widget classes are not specified."))
+		return;
 	}
 
 	//TODO ADD NOTE ASYNC LOADING
 	// Get the streamable manager
 	FStreamableManager& StreamableManager = UAssetManager::GetStreamableManager();
 	// Start async load
-	WidgetLoadHandle = StreamableManager.RequestAsyncLoad(Class.ToSoftObjectPath(),FStreamableDelegate::CreateUObject(this, &UClickInteractComponent::OnWidgetClassLoaded));
+	WidgetLoadHandle = StreamableManager.RequestAsyncLoad(WidgetClass.ToSoftObjectPath(),FStreamableDelegate::CreateUObject(this, &UClickInteractComponent::OnWidgetClassLoaded));
 }
 
 void UClickInteractComponent::OnWidgetClassLoaded()
