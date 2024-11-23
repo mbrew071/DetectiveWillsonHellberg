@@ -1,4 +1,4 @@
-// All rights reserved, HelloIT Norweskie
+// All rights reserved,
 
 #pragma once
 
@@ -19,5 +19,5 @@ class CLICKINTERACTIONSYSTEM_API IClickInteractComponent_I
 public:
 	//InteractingCharacter <=> The Character that interacted with ClickInteractComponent
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="ClickInteract")
-	void TryInteractWith_I(const AActor* InteractingCharacter);
+	void TryInteractWith_I(const AActor* InteractingCharacter); 
 };

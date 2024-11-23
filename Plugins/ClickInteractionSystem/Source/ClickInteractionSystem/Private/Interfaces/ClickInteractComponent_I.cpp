@@ -1,4 +1,4 @@
-// All rights reserved, HelloIT Norweskie
+// All rights reserved, 
 
 
 #include "Interfaces/ClickInteractComponent_I.h"

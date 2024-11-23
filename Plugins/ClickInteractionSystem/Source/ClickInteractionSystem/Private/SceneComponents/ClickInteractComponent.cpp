@@ -1,5 +1,4 @@
-// All rights reserved, HelloIT Norweskie
-
+// All rights reserved, KAG 2024
 
 #include "SceneComponents/ClickInteractComponent.h"
 
@@ -7,138 +6,22 @@
 #include "Components/BoxComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/WidgetComponent.h"
+#include "Engine/StreamableManager.h"
 #include "Objects/InteractActions.h"
-#include "Objects/InteractActionsManager.h"
+#include "Engine/AssetManager.h"
+#include "Subsystems/ClickInteractController.h"
 
-//////////////////////////////////////////////// General /////////////////////////////////////////////////////////////
+//////////////////////////////////////////////// Construction  /////////////////////////////////////////////////////////
 UClickInteractComponent::UClickInteractComponent()
 {
-	//Idk This doesnt work, no idea how to default it to a blueprint widget class
-	//WidgetClass = TSoftClassPtr<UUserWidget>(FString::Printf(TEXT("%s/Plugins/ClickInteractionSystem/Content/WBP_InteractPin.uasset"), *FPaths::ProjectContentDir()));
-	InitClickInteractComponent();
+	DisableTick();
 	InitWidgetComponent();
 }
 
-void UClickInteractComponent::BeginPlay()
-{
-	Super::BeginPlay();
-	InitComponentTags();
-	InitRangeArea();
-	RangeAreaAddDynamic();
-	SetNoDistanceVisibility();
-}
-
-void UClickInteractComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-}
-
-void UClickInteractComponent::InitClickInteractComponent()
+void UClickInteractComponent::DisableTick()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	PrimaryComponentTick.bStartWithTickEnabled = false;
-}
-
-//////////////////////////////////////////////// Tags  /////////////////////////////////////////////////////////////
-
-void UClickInteractComponent::InitComponentTags()
-{
-	if (!ComponentTag.IsValid()) { UE_LOG(LogTemp, Error, TEXT("ComponentTag is invalid tag in ClickInteractComponent")) }
-	ComponentTags.Add(ComponentTag.GetTagName());
-}
-
-//////////////////////////////////////////////// Collision /////////////////////////////////////////////////////////////
-
-void UClickInteractComponent::InitRangeArea()
-{
-	if(!RangeAreaTag.IsValid()) { return; }
-	
-	AActor* Owner = this->GetOwner();
-	TArray<UActorComponent*> Components = Owner->GetComponentsByTag(UShapeComponent::StaticClass(), RangeAreaTag.GetTagName());
-
-	RangeArea.Empty();
-	for (auto& Element : Components)
-	{
-		RangeArea.Add(Element);
-	}
-}
-
- 
-void UClickInteractComponent::OnComponentRangeBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (!bCheckDistance) {return;}
-	if(!OtherActor->ActorHasTag(OverlapTarget.GetTagName())) {return;}
-	ActorsInRange.Add(OtherActor);
-	UpdateWidgetVisibility();
-}
-
-void UClickInteractComponent::OnComponentRangeEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-									 UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	if (!bCheckDistance) {return;}
-	if(!OtherActor->ActorHasTag(OverlapTarget.GetTagName())) {return;}
-	ActorsInRange.Remove(OtherActor);
-	UpdateWidgetVisibility();
-}
-
-void UClickInteractComponent::RangeAreaAddDynamic()
-{
-	//TODO try do these on construction
-	for (auto& Element : RangeArea)
-	{
-		UShapeComponent* ShapeComponent = static_cast<UShapeComponent*>(Element);
-		if(ShapeComponent)
-		{
-			ShapeComponent->OnComponentBeginOverlap.AddDynamic(this, &UClickInteractComponent::OnComponentRangeBeginOverlap);
-			ShapeComponent->OnComponentEndOverlap.AddDynamic(this, &UClickInteractComponent::OnComponentRangeEndOverlap);
-		}
-	}
-}
-
-void UClickInteractComponent::UpdateWidgetVisibility()
-{
-	if(ActorsInRange.IsEmpty())
-	{
-		SetWidgetVisibility(false);
-	}
-	else
-	{
-		SetWidgetVisibility(true);
-	}
-}
-
-void UClickInteractComponent::TryInteractWith(const AActor* InteractingCharacter)
-{
-	if(!InteractingCharacter) { return; }
-	if (!InteractActions.LoadSynchronous()) { return; }
-	if (!InteractionType.IsValid()) { return; }
-	
-	//Is the character close enough?
-	if(bCheckDistance)
-	{
-		if (!ActorsInRange.Contains(InteractingCharacter)) { return; }
-	}
-
-	//TODO FIX InteractActionsManager. Atm it crashes engine. To reproduce:
-	//1. Run engine
-	//2. Recompile Blueprint child of UInteractActions
-	//3. Try to interact with something
-	  
-	//UInteractActions* Actions = UInteractActionsManager::GetInteractActions(InteractActions);
-	//if (!Actions) { return; }
-	//UE_LOG(LogTemp, Error, TEXT("NewInstance is not valid"))
-	//Actions->PerformInteraction(InteractingCharacter, GetOwner(), InteractionType);
-
-	UInteractActions* NewInstance = NewObject<UInteractActions>(GetTransientPackage(), InteractActions.LoadSynchronous(), NAME_Object);
-	NewInstance->PerformInteraction(InteractingCharacter, GetOwner(), InteractionType);
-	//OnInteractionCompleted.Broadcast();
-}
-
-void UClickInteractComponent::TryInteractWith_I_Implementation(const AActor* InteractingCharacter)
-{
-	//IClickInteractComponent_I::TryInteractWith_I_Implementation(InteractingCharacter, OnInteractionCompleted);
-	TryInteractWith(InteractingCharacter);
 }
 
 void UClickInteractComponent::InitWidgetComponent()
@@ -148,50 +31,220 @@ void UClickInteractComponent::InitWidgetComponent()
 	WidgetComponent->PrimaryComponentTick.bCanEverTick = false;
 	WidgetComponent->PrimaryComponentTick.bStartWithTickEnabled = false;
 	WidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
+	WidgetComponent->SetDrawSize(FVector2D(32.0,32.0));
 }
 
-bool UClickInteractComponent::SetWidgetVisibility(const bool bNewVisibility)
+//////////////////////////////////////////////// BeginPlay  ////////////////////////////////////////////////////////////
+void UClickInteractComponent::BeginPlay()
 {
-	
-	if (!WidgetComponent) { return false; }
-	if (!bNewVisibility)
+	Super::BeginPlay();
+	InitComponentTag();
+	InitRangeArea();
+	InitWidgetClass();
+	RangeAreaAddDynamic();
+	SetNoDistanceVisibility();
+}
+
+bool UClickInteractComponent::InitComponentTag()
+{
+	if (!GetOwner()->GetWorld()->GetGameInstance()->GetSubsystem<UClickInteractController>()->InteractComponent.IsValid())
 	{
-		//remove current widget 
-		if (UserWidget) {UserWidget->RemoveFromParent();}
-		if (UserWidget) {UserWidget->Destruct();}
-		
-		WidgetComponent->SetWidget(nullptr);
-		return true;
+		return false;
 	}
+	ComponentTags.Add(GetOwner()->GetWorld()->GetGameInstance()->GetSubsystem<UClickInteractController>()->InteractComponent.GetTagName());
+	return true;
+}
 
-	//Try load widget class
-	UClass* WidgetClassLoaded = WidgetClass.LoadSynchronous();
-	if (!WidgetClassLoaded) { return false; }
-	
-	if(bNewVisibility)
+void UClickInteractComponent::InitRangeArea()
+{
+	AActor* Owner = this->GetOwner();
+	TArray<UActorComponent*> Components = Owner->GetComponentsByTag(UShapeComponent::StaticClass(), GetOwner()->GetWorld()->GetGameInstance()->GetSubsystem<UClickInteractController>()->RangeArea.GetTagName());
+
+	if(Components.Num() == 0)
 	{
-		//remove Current
-		if (UserWidget) {UserWidget->RemoveFromParent();}
-		if (UserWidget) {UserWidget->Destruct();}
+		//There are no area components therefore this ClickInteract Component can be clicked from any range
+		return;
+	}
+	else
+	{
+		RangeAreaComponents.Empty();
+		for (auto& Element : Components)
+		{
+			RangeAreaComponents.Add(Element);
+		}
+	}
+}
 
-		//Spawn new
-		UserWidget = CreateWidget<UUserWidget>(GetWorld(), WidgetClassLoaded);
-		if (!UserWidget) { return false; }
-
-		//Spawned Succeeded therefore we initialize:
-		WidgetComponent->SetWidget(UserWidget);
-		return true;
+void UClickInteractComponent::InitWidgetClass()
+{
+	if ( WidgetClass.IsNull() == false )
+	{
+		return;
 	}
 	
-	//Spawn failed therefore we cleanup
-	WidgetComponent->SetWidget(nullptr);
-	return false;
+	AActor* Owner = this->GetOwner();
+	WidgetClass = Owner->GetOwner()->GetWorld()->GetGameInstance()->GetSubsystem<UClickInteractController>()->DefaultWidget;
+}
+
+void UClickInteractComponent::RangeAreaAddDynamic()
+{
+	//TODO try do these on construction
+	for (auto& Element : RangeAreaComponents)
+	{
+		UShapeComponent* ShapeComponent = static_cast<UShapeComponent*>(Element);
+		if(ShapeComponent)
+		{
+			ShapeComponent->OnComponentBeginOverlap.AddDynamic(this, &UClickInteractComponent::OnComponentRangeAreaBeginOverlap);
+
+			ShapeComponent->OnComponentEndOverlap.AddDynamic(this, &UClickInteractComponent::OnComponentRangeEndOverlap);
+		}
+	}
 }
 
 void UClickInteractComponent::SetNoDistanceVisibility()
 {
-	if (!bCheckDistance)
+	if (ShouldCheckRange()== 0)
 	{
-		SetWidgetVisibility(true);
+		ShowWidget();
 	}
 }
+
+//////////////////////////////////////////////// RangeArea Overlaps /////////////////////////////////////////////
+
+bool UClickInteractComponent::ShouldCheckRange()
+{
+	return RangeAreaComponents.Num()>0;
+}
+
+void UClickInteractComponent::OnComponentRangeAreaBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if(!OtherActor->ActorHasTag(GetOwner()->GetWorld()->GetGameInstance()->GetSubsystem<UClickInteractController>()->OverlapTarget.GetTagName())) {return;}
+	ActorsInRange.Add(OtherActor);
+
+	ShowWidget();
+	
+}
+
+void UClickInteractComponent::OnComponentRangeEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if(!OtherActor->ActorHasTag(GetOwner()->GetWorld()->GetGameInstance()->GetSubsystem<UClickInteractController>()->OverlapTarget.GetTagName())) {return;}
+	ActorsInRange.Remove(OtherActor);
+
+	if(ActorsInRange.IsEmpty())
+	{
+		HideWidget();
+	}
+}
+
+//////////////////////////////////////////////// Widget Visibility ////////////////////////////////////////////
+
+void UClickInteractComponent::ShowWidget()
+{
+	if (!WidgetComponent) { return; }
+	
+	TSoftClassPtr<UUserWidget> Class = WidgetClass;
+	if (Class.IsNull())
+	{
+		//Try get default class
+		UClickInteractController* Controller = GetOwner()->GetWorld()->GetGameInstance()->GetSubsystem<UClickInteractController>();
+		Class = Controller->DefaultWidget;
+		if (Class.IsNull())
+		{
+			UE_LOG(LogTemp,Warning, TEXT("Cannot load widget because widget classes are not specified."))
+			return;
+		}
+	}
+
+	//TODO ADD NOTE ASYNC LOADING
+	// Get the streamable manager
+	FStreamableManager& StreamableManager = UAssetManager::GetStreamableManager();
+	// Start async load
+	WidgetLoadHandle = StreamableManager.RequestAsyncLoad(Class.ToSoftObjectPath(),FStreamableDelegate::CreateUObject(this, &UClickInteractComponent::OnWidgetClassLoaded));
+}
+
+void UClickInteractComponent::OnWidgetClassLoaded()
+{
+	if(ActorsInRange.IsEmpty())
+	{
+		return;;
+	}
+	
+	if (WidgetLoadHandle.IsValid() == false)
+	{
+		return;
+	}
+
+	// Get the loaded class
+	UClass* LoadedClass = Cast<UClass>(WidgetLoadHandle->GetLoadedAsset());
+    
+	if (LoadedClass && WidgetComponent)
+	{
+		// Set the widget class
+		WidgetComponent->SetWidgetClass(LoadedClass);
+	}
+    
+	// Clear the handle
+	WidgetLoadHandle.Reset();
+}
+
+void UClickInteractComponent::HideWidget()
+{
+	if (!WidgetComponent) { return; }
+	WidgetComponent->SetWidgetClass(nullptr);
+}
+
+//////////////////////////////////////////////// Interaction /////////////////////////////////////////////
+
+void UClickInteractComponent::TryInteractWith_I_Implementation(const AActor* InteractingCharacter)
+{
+	TryInteractWith(InteractingCharacter);
+}
+
+void UClickInteractComponent::TryInteractWith(const AActor* InteractingCharacter)
+{
+	if (bInteractionOngoing) { return;}
+	if(!InteractingCharacter) { return; }
+	
+	TSoftClassPtr<UInteractActions> InteractActions = GetOwner()->GetWorld()->GetGameInstance()->GetSubsystem<UClickInteractController>()->InteractActions;;
+	
+	if (!InteractActions.LoadSynchronous()) { return; }
+	if (!InteractionType.IsValid()) { return; }
+	
+	if(ShouldCheckRange())
+	{
+		if (!ActorsInRange.Contains(InteractingCharacter))
+		{
+			//Actor that tries to interact is not in range
+			return;
+		}
+	}
+	bInteractionOngoing = true;
+	
+	UInteractActions* NewInstance = NewObject<UInteractActions>(this->GetOwner()->GetWorld(), InteractActions.LoadSynchronous());
+
+	NewInstance->OnInteractionEnd.AddDynamic(this, &UClickInteractComponent::OnInteractionActionEnd);
+	NewInstance->OnInteractionBegin.AddDynamic(this, &UClickInteractComponent::OnInteractionActionBegin);
+	//NewInstance->OnInteractionProgress.AddDynamic(this, &UClickInteractComponent::OnInteractionActionProgress);
+		
+	NewInstance->PerformInteraction(InteractingCharacter, GetOwner(), InteractionType);
+}
+
+void UClickInteractComponent::OnInteractionActionEnd(const bool bSuccess)
+{
+//	OnInteractionProgress.Clear();
+	OnInteractionBegin.Clear();
+	OnInteractionEnd.Broadcast(bSuccess);
+	OnInteractionEnd.Clear();
+	bInteractionOngoing = false;
+}
+
+void UClickInteractComponent::OnInteractionActionBegin()
+{
+	OnInteractionBegin.Broadcast();
+	OnInteractionBegin.Clear();
+}
+
+/*void UClickInteractComponent::OnInteractionActionProgress(const int32 Progress)
+{
+	OnInteractionProgress.Broadcast(Progress);
+}*/

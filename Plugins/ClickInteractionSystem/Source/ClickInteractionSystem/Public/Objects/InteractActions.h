@@ -1,8 +1,9 @@
-// All rights reserved, HelloIT Norweskie
+// All rights reserved, 
 
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ClickInteractDelegates.h"
 #include "InteractActions.generated.h"
 
 /*
@@ -10,8 +11,7 @@
  * will be implemented by Children of this class.
  */
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInteractionEnd, const bool, bSuccess);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInteractionBegin);
+
 
 UCLASS(Blueprintable, BlueprintType)
 class CLICKINTERACTIONSYSTEM_API UInteractActions : public UObject
@@ -21,8 +21,7 @@ class CLICKINTERACTIONSYSTEM_API UInteractActions : public UObject
 public:	
 	//Override this function.
 	UFUNCTION(BlueprintNativeEvent)
-	void PerformInteraction(const AActor* InteractingCharacter, const AActor* InteractionTarget,
-	                        const FGameplayTag InteractionType);
+	void PerformInteraction(const AActor* InteractingCharacter, const AActor* InteractionTarget, const FGameplayTag InteractionType);
 
 ///////////////////////////////////////////////////// DELEGATES ///////////////////////////////////////////
 public:
@@ -31,4 +30,7 @@ public:
 	
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FOnInteractionBegin OnInteractionBegin;
+
+	/*UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FOnInteractionProgress OnInteractionProgress;*/
 };
