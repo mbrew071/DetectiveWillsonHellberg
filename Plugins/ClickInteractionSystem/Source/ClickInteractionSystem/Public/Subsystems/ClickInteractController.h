@@ -18,7 +18,7 @@ class CLICKINTERACTIONSYSTEM_API UClickInteractController : public UGameInstance
 public:
 	
 	UFUNCTION(BlueprintCallable, Category="ClickInteract")
-	bool InitializePlugin( TSoftClassPtr<UUserWidget> InDefaultWidget, FGameplayTag InRangeArea, FGameplayTag InOverlapTarget); 
+	bool InitializePlugin(FGameplayTag InRangeArea, FGameplayTag InOverlapTarget); 
 
 public:
 	//Class that contains code for interaction behaviour.

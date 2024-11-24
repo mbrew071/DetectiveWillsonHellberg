@@ -14,20 +14,10 @@
 //////////////////////////////////////////////// Construction  /////////////////////////////////////////////////////////
 UClickInteractComponent::UClickInteractComponent()
 {
-	DisableTick();
-	InitWidgetComponent();
-}
-
-void UClickInteractComponent::DisableTick()
-{
 	PrimaryComponentTick.bCanEverTick = false;
 	PrimaryComponentTick.bStartWithTickEnabled = false;
-}
-
-void UClickInteractComponent::InitWidgetComponent()
-{
+	
 	WidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("Widget"));
-	WidgetComponent->SetupAttachment(this);
 	WidgetComponent->PrimaryComponentTick.bCanEverTick = false;
 	WidgetComponent->PrimaryComponentTick.bStartWithTickEnabled = false;
 	WidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
@@ -38,8 +28,11 @@ void UClickInteractComponent::InitWidgetComponent()
 void UClickInteractComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	if(WidgetComponent && !WidgetClass.IsNull())
+	{	
+		WidgetComponent->AttachToComponent(this,FAttachmentTransformRules::KeepRelativeTransform);
+	}
 	InitRangeArea();
-	InitWidgetClass();
 	RangeAreaAddDynamic();
 	SetNoDistanceVisibility();
 }
@@ -61,14 +54,6 @@ void UClickInteractComponent::InitRangeArea()
 		{
 			RangeAreaComponents.Add(Element);
 		}
-	}
-}
-
-void UClickInteractComponent::InitWidgetClass()
-{
-	if ( WidgetClass.IsNull())
-	{
-		WidgetClass = GetOwner()->GetWorld()->GetGameInstance()->GetSubsystem<UClickInteractController>()->DefaultWidget;
 	}
 }
 
@@ -125,14 +110,16 @@ void UClickInteractComponent::OnComponentRangeEndOverlap(UPrimitiveComponent* Ov
 
 void UClickInteractComponent::ShowWidget()
 {
-	if (!WidgetComponent) { return; }
-	
-	if (WidgetClass.IsNull())
+	if (WidgetComponent == nullptr)
 	{
-		UE_LOG(LogTemp,Warning, TEXT("Cannot load widget because widget classes are not specified."))
+		UE_LOG(LogTemp, Error, TEXT("Cannot show widget because WidgetComponent is nullptr."))
 		return;
 	}
-
+	if (WidgetClass.IsNull())
+	{
+	
+		return;
+	}
 	//TODO ADD NOTE ASYNC LOADING
 	// Get the streamable manager
 	FStreamableManager& StreamableManager = UAssetManager::GetStreamableManager();
@@ -167,7 +154,10 @@ void UClickInteractComponent::OnWidgetClassLoaded()
 
 void UClickInteractComponent::HideWidget()
 {
-	if (!WidgetComponent) { return; }
+	if (WidgetComponent == nullptr)
+	{
+		return;
+	}
 	WidgetComponent->SetWidgetClass(nullptr);
 }
 

@@ -4,7 +4,7 @@
 #include "Subsystems/ClickInteractController.h"
 //#include "Objects/InteractActions.h"
 
-bool UClickInteractController::InitializePlugin( TSoftClassPtr<UUserWidget> InDefaultWidget, FGameplayTag InRangeArea, FGameplayTag InOverlapTarget) 
+bool UClickInteractController::InitializePlugin(FGameplayTag InRangeArea, FGameplayTag InOverlapTarget) 
 {
 	bool bSuccess = true;
 
@@ -18,7 +18,7 @@ bool UClickInteractController::InitializePlugin( TSoftClassPtr<UUserWidget> InDe
 		InteractActions = InInteractActions;
 	}*/
 
-	if (InDefaultWidget.IsNull())
+	/*if (InDefaultWidget.IsNull())
 	{
 		bSuccess = false;
 		UE_LOG(LogTemp, Fatal, TEXT("Failed to initialize plugin. InDefaultWidget is invalid"))
@@ -26,7 +26,7 @@ bool UClickInteractController::InitializePlugin( TSoftClassPtr<UUserWidget> InDe
 	else
 	{
 		DefaultWidget = InDefaultWidget;
-	}
+	}*/
 
 	/*if (InInteractComponent.IsValid())
 	{
