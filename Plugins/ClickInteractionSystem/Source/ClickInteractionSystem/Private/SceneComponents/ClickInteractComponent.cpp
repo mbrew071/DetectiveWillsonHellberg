@@ -173,19 +173,19 @@ void UClickInteractComponent::HideWidget()
 
 //////////////////////////////////////////////// Interaction /////////////////////////////////////////////
 
-void UClickInteractComponent::TryInteractWith_I_Implementation(const AActor* InteractingCharacter)
+void UClickInteractComponent::TryInteractWith_I_Implementation(AActor* InteractingActor)
 {
-	TryInteractWith(InteractingCharacter);
+	TryInteractWith(InteractingActor);
 }
 
-void UClickInteractComponent::TryInteractWith(const AActor* InteractingCharacter)
+void UClickInteractComponent::TryInteractWith(AActor* InteractingActor)
 {
 	if (bInteractionOngoing) { return;}
-	if(!InteractingCharacter) { return; }
+	if(!InteractingActor) { return; }
 	
 	if(ShouldCheckRange())
 	{
-		if (!ActorsInRange.Contains(InteractingCharacter))
+		if (!ActorsInRange.Contains(InteractingActor))
 		{
 			//Actor that tries to interact is not in range
 			return;
@@ -193,7 +193,7 @@ void UClickInteractComponent::TryInteractWith(const AActor* InteractingCharacter
 	}
 	
 	bInteractionOngoing = true;
-	OnInteractionBegin.Broadcast();
+	OnInteractionBegin.Broadcast(InteractingActor);
 	OnInteractionEnd.AddDynamic(this, &UClickInteractComponent::OnInteractionActionEnd);
 }
 

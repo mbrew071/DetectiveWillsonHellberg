@@ -17,7 +17,7 @@ class CLICKINTERACTIONSYSTEM_API IClickInteractComponent_I
 	GENERATED_BODY()
 
 public:
-	//InteractingCharacter <=> The Character that interacted with ClickInteractComponent
+	//InteractingActor is The Actor that interacted with ClickInteractComponent
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="ClickInteract")
-	void TryInteractWith_I(const AActor* InteractingCharacter); 
+	void TryInteractWith_I(AActor* InteractingActor); 
 };

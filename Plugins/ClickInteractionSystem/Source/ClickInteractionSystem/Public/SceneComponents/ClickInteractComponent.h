@@ -71,12 +71,12 @@ private:
 	/////////////////////////////////////////// Interaction //////////////////////////////////////////////////////
 public:
 	//Executed when Player clicked on ClickArea  
-	virtual void TryInteractWith_I_Implementation(const AActor* InteractingCharacter) override;
+	virtual void TryInteractWith_I_Implementation(AActor* InteractingActor) override;
 	
 private:
 
 	UFUNCTION(BlueprintCallable, Category="SceneComponent.ClickInteract")
-	void TryInteractWith(const AActor* InteractingCharacter);
+	void TryInteractWith(AActor* InteractingActor);
 	
 	//////////////////////////////////////////// Variables /////////////////////////////////////////////////////
 public:
