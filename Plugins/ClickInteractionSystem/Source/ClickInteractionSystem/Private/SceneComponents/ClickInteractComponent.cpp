@@ -199,7 +199,5 @@ void UClickInteractComponent::TryInteractWith(AActor* InteractingActor)
 
 void UClickInteractComponent::OnInteractionActionEnd(const bool bSuccess)
 {
-	OnInteractionEnd.Broadcast(bSuccess);
-	OnInteractionEnd.Clear();
 	bInteractionOngoing = false;
 }
