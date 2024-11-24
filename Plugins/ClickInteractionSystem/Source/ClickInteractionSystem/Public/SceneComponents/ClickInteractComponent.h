@@ -29,18 +29,12 @@ class CLICKINTERACTIONSYSTEM_API UClickInteractComponent : public USceneComponen
 public:	
 	UClickInteractComponent();
 	
-private:	
-	void DisableTick();
-	void InitWidgetComponent();
-
 	//////////////////////////////////////////////// BeginPlay  ////////////////////////////////////////////////
 protected:
 	virtual void BeginPlay() override;
 	
 private:
 	void InitRangeArea();
-	//If Widget class is none then use the default widget class provided in plugin initialization
-	void InitWidgetClass();
 	void RangeAreaAddDynamic();
 	//If we are using no distance check then init widget visibility
 	void SetNoDistanceVisibility();
@@ -111,7 +105,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design")
 	TSoftClassPtr<UUserWidget> WidgetClass;
 
-	UPROPERTY(EditAnywhere, Category="Design")
+	UPROPERTY()
 	UWidgetComponent* WidgetComponent;
 };
 
