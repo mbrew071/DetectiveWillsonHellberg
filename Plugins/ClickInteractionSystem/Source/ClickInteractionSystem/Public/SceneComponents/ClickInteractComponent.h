@@ -38,8 +38,6 @@ protected:
 	virtual void BeginPlay() override;
 	
 private:
-	//Initializes the tag of this component
-	bool InitComponentTag();
 	void InitRangeArea();
 	//If Widget class is none then use the default widget class provided in plugin initialization
 	void InitWidgetClass();
@@ -76,14 +74,16 @@ public:
 	virtual void TryInteractWith_I_Implementation(const AActor* InteractingCharacter) override;
 	
 private:
+
+	UFUNCTION(BlueprintCallable, Category="SceneComponent.ClickInteract")
 	void TryInteractWith(const AActor* InteractingCharacter);
 	
 	//////////////////////////////////////////// Variables /////////////////////////////////////////////////////
 public:
-	//Tag for the type of interaction that this component has
+	/*//Tag for the type of interaction that this component has
 	//eg. "InteractionType.Pickup"
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Design")
-	FGameplayTag InteractionType = FGameplayTag::RequestGameplayTag(FName("InteractionType.Pickup")); 
+	FGameplayTag InteractionType = FGameplayTag::RequestGameplayTag(FName("InteractionType.Pickup")); */
 	
 	//Actors that are currently close enough to interact this component
 	UPROPERTY(BlueprintReadOnly, Category="SceneComponent.ClickInteract")
@@ -97,18 +97,12 @@ public:
 	UPROPERTY()
 	TArray<UActorComponent*> RangeAreaComponents;
 
-	void OnInteractionActionBegin();
 	UPROPERTY(BlueprintAssignable)
 	FOnInteractionBegin OnInteractionBegin;
 	
-	/*
-	void OnInteractionActionProgress(const int32 Progress);
-	UPROPERTY(BlueprintCallable)
-	FOnInteractionProgress OnInteractionProgress;
-	*/
-	
+	UFUNCTION()
 	void OnInteractionActionEnd(const bool bSuccess);
-	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	UPROPERTY(BlueprintCallable, BlueprintAssignable)
 	FOnInteractionEnd OnInteractionEnd;
 	
 	/////////////////////////////////////////// Widget ///////////////////////////////////////////////////////

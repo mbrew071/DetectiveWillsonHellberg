@@ -11,4 +11,3 @@ void UInteractActions::PerformInteraction_Implementation(const AActor* Interacti
 	OnInteractionBegin.Broadcast();
 	// Implement this by children
 }
-

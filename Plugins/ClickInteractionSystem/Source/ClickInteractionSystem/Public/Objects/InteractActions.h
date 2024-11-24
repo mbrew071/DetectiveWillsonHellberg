@@ -23,6 +23,7 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void PerformInteraction(const AActor* InteractingCharacter, const AActor* InteractionTarget, const FGameplayTag InteractionType);
 
+	
 ///////////////////////////////////////////////////// DELEGATES ///////////////////////////////////////////
 public:
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)

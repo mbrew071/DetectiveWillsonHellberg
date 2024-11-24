@@ -38,21 +38,10 @@ void UClickInteractComponent::InitWidgetComponent()
 void UClickInteractComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	InitComponentTag();
 	InitRangeArea();
 	InitWidgetClass();
 	RangeAreaAddDynamic();
 	SetNoDistanceVisibility();
-}
-
-bool UClickInteractComponent::InitComponentTag()
-{
-	if (!GetOwner()->GetWorld()->GetGameInstance()->GetSubsystem<UClickInteractController>()->InteractComponent.IsValid())
-	{
-		return false;
-	}
-	ComponentTags.Add(GetOwner()->GetWorld()->GetGameInstance()->GetSubsystem<UClickInteractController>()->InteractComponent.GetTagName());
-	return true;
 }
 
 void UClickInteractComponent::InitRangeArea()
@@ -116,10 +105,9 @@ bool UClickInteractComponent::ShouldCheckRange()
 void UClickInteractComponent::OnComponentRangeAreaBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if(!OtherActor->ActorHasTag(GetOwner()->GetWorld()->GetGameInstance()->GetSubsystem<UClickInteractController>()->OverlapTarget.GetTagName())) {return;}
-	ActorsInRange.Add(OtherActor);
+	ActorsInRange.AddUnique(OtherActor);
 
 	ShowWidget();
-	
 }
 
 void UClickInteractComponent::OnComponentRangeEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
@@ -195,11 +183,6 @@ void UClickInteractComponent::TryInteractWith(const AActor* InteractingCharacter
 	if (bInteractionOngoing) { return;}
 	if(!InteractingCharacter) { return; }
 	
-	TSoftClassPtr<UInteractActions> InteractActions = GetOwner()->GetWorld()->GetGameInstance()->GetSubsystem<UClickInteractController>()->InteractActions;;
-	
-	if (!InteractActions.LoadSynchronous()) { return; }
-	if (!InteractionType.IsValid()) { return; }
-	
 	if(ShouldCheckRange())
 	{
 		if (!ActorsInRange.Contains(InteractingCharacter))
@@ -208,33 +191,15 @@ void UClickInteractComponent::TryInteractWith(const AActor* InteractingCharacter
 			return;
 		}
 	}
-	bInteractionOngoing = true;
 	
-	UInteractActions* NewInstance = NewObject<UInteractActions>(this->GetOwner()->GetWorld(), InteractActions.LoadSynchronous());
-
-	NewInstance->OnInteractionEnd.AddDynamic(this, &UClickInteractComponent::OnInteractionActionEnd);
-	NewInstance->OnInteractionBegin.AddDynamic(this, &UClickInteractComponent::OnInteractionActionBegin);
-	//NewInstance->OnInteractionProgress.AddDynamic(this, &UClickInteractComponent::OnInteractionActionProgress);
-		
-	NewInstance->PerformInteraction(InteractingCharacter, GetOwner(), InteractionType);
+	bInteractionOngoing = true;
+	OnInteractionBegin.Broadcast();
+	OnInteractionEnd.AddDynamic(this, &UClickInteractComponent::OnInteractionActionEnd);
 }
 
 void UClickInteractComponent::OnInteractionActionEnd(const bool bSuccess)
 {
-//	OnInteractionProgress.Clear();
-	OnInteractionBegin.Clear();
 	OnInteractionEnd.Broadcast(bSuccess);
 	OnInteractionEnd.Clear();
 	bInteractionOngoing = false;
 }
-
-void UClickInteractComponent::OnInteractionActionBegin()
-{
-	OnInteractionBegin.Broadcast();
-	OnInteractionBegin.Clear();
-}
-
-/*void UClickInteractComponent::OnInteractionActionProgress(const int32 Progress)
-{
-	OnInteractionProgress.Broadcast(Progress);
-}*/

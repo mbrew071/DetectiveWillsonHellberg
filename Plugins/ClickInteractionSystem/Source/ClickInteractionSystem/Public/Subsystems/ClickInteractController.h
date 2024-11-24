@@ -7,7 +7,7 @@
 #include "GameplayTagContainer.h"
 #include "ClickInteractController.generated.h"
 
-class UInteractActions;
+//class UInteractActions;
 class UUserWidget;
 
 UCLASS()
@@ -18,22 +18,24 @@ class CLICKINTERACTIONSYSTEM_API UClickInteractController : public UGameInstance
 public:
 	
 	UFUNCTION(BlueprintCallable, Category="ClickInteract")
-	bool InitializePlugin(TSoftClassPtr<UInteractActions> InInteractActions, TSoftClassPtr<UUserWidget> InDefaultWidget, FGameplayTag InInteractComponent, FGameplayTag InRangeArea, FGameplayTag InOverlapTarget); 
+	bool InitializePlugin( TSoftClassPtr<UUserWidget> InDefaultWidget, FGameplayTag InRangeArea, FGameplayTag InOverlapTarget); 
 
 public:
 	//Class that contains code for interaction behaviour.
 	//When player interacted with sth the action is coded there.
+	/*
 	UPROPERTY(BlueprintReadOnly, Category="ClickInteract")
 	TSoftClassPtr<UInteractActions> InteractActions;
+	*/
 
 	//This widget will be shown when interaction is possible AND if a component doesnt override it with a custom widget 
 	UPROPERTY(BlueprintReadOnly, Category="ClickInteract")
 	TSoftClassPtr<UUserWidget> DefaultWidget;
 
-	//Tag of all InteractComponents
+	/*//Tag of all InteractComponents
 	//eg. "SceneComponent.ClickInteract"
 	UPROPERTY(BlueprintReadOnly, Category="ClickInteract")
-	FGameplayTag InteractComponent;
+	FGameplayTag InteractComponent;*/
 
 	//Tag of collision components that will be used as Range area
 	//eg. "SceneComponent.ClickInteract.RangeAreaComponents"
